@@ -12,7 +12,7 @@ export default function MainLayout() {
       <div className="flex">
         <Sidebar isOpen={sidebarOpen} />
         <main
-          className={`flex-1 p-6 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}
+          className={`flex-1 p-6 mt-16 transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}
         >
           <Outlet />
         </main>

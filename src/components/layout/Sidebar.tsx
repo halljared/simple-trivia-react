@@ -8,9 +8,9 @@ interface SidebarProps {
 export default function Sidebar({ isOpen }: SidebarProps) {
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/' },
-    { icon: PlusCircle, label: 'Create Quiz', path: '/create' },
+    { icon: PlusCircle, label: 'Create Event', path: '/create' },
     { icon: PlayCircle, label: 'Host Game', path: '/host' },
-    { icon: Library, label: 'My Quizzes', path: '/quizzes' },
+    { icon: Library, label: 'My Events', path: '/events' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
 

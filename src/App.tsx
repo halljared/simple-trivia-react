@@ -1,43 +1,44 @@
 import {
   RouterProvider,
+  createRootRoute,
+  createRoute,
   Router,
-  Route,
-  RootRoute,
 } from '@tanstack/react-router';
-import MainLayout from './components/layout/MainLayout';
-import Dashboard from './pages/Dashboard';
+import MainLayout from '@/components/layout/MainLayout';
+import Dashboard from '@/pages/Dashboard';
+import EventConfig from '@/pages/EventConfig';
 
 // Create a root route
-const rootRoute = new RootRoute({
+const rootRoute = createRootRoute({
   component: MainLayout,
 });
 
 // Create routes for each page
-const indexRoute = new Route({
+const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   component: Dashboard,
 });
 
-const createRoute = new Route({
+const createQuizRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/create',
-  component: () => <div className="p-4">Create Quiz Content</div>,
+  component: () => <EventConfig />,
 });
 
-const hostRoute = new Route({
+const hostRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/host',
   component: () => <div className="p-4">Host Game Content</div>,
 });
 
-const quizzesRoute = new Route({
+const quizzesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/quizzes',
   component: () => <div className="p-4">My Quizzes Content</div>,
 });
 
-const settingsRoute = new Route({
+const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
   component: () => <div className="p-4">Settings Content</div>,
@@ -46,7 +47,7 @@ const settingsRoute = new Route({
 // Create the route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  createRoute,
+  createQuizRoute,
   hostRoute,
   quizzesRoute,
   settingsRoute,
