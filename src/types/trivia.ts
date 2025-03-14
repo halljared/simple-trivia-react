@@ -13,9 +13,9 @@ export interface TriviaRound {
     name: string;
     description?: string;
     questions: TriviaQuestion[];
+    category?: string[];
     roundNumber: number;
     timeLimit?: number; // in minutes
-    totalPoints?: number;
 }
 
 export interface TriviaQuestion {
@@ -25,6 +25,5 @@ export interface TriviaQuestion {
     points: number;
     type: 'multiple-choice' | 'true-false' | 'open-ended';
     options?: string[]; // for multiple choice questions
-    category?: string[];
     difficulty: 'easy' | 'medium' | 'hard';
 }
