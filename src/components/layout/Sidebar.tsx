@@ -1,5 +1,18 @@
-import { Home, PlusCircle, PlayCircle, Settings, Library } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
+import {
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Box,
+} from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import PlayCircleIcon from '@mui/icons-material/PlayCircle';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -7,31 +20,51 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen }: SidebarProps) {
   const navItems = [
-    { icon: Home, label: 'Dashboard', path: '/' },
-    { icon: PlusCircle, label: 'Create Event', path: '/create' },
-    { icon: PlayCircle, label: 'Host Game', path: '/host' },
-    { icon: Library, label: 'My Events', path: '/events' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: HomeIcon, label: 'Dashboard', path: '/' },
+    { icon: AddCircleIcon, label: 'Create Event', path: '/create' },
+    { icon: PlayCircleIcon, label: 'Host Game', path: '/host' },
+    { icon: LibraryBooksIcon, label: 'My Events', path: '/events' },
+    { icon: SettingsIcon, label: 'Settings', path: '/settings' },
   ];
 
   return (
-    <aside
-      className={`bg-background fixed top-16 left-0 h-[calc(100vh-4rem)] w-64 border-r transition-transform duration-300 ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}
+    <Drawer
+      variant="persistent"
+      anchor="left"
+      open={isOpen}
+      sx={{
+        width: 256,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: 256,
+          boxSizing: 'border-box',
+          borderRight: '1px solid',
+          borderColor: 'divider',
+        },
+      }}
     >
-      <nav className="space-y-2 p-4">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-3 rounded-lg px-3 py-2 transition-colors"
-          >
-            <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
-          </Link>
-        ))}
-      </nav>
-    </aside>
+      <Box sx={{ mt: 8 }}>
+        <List>
+          {navItems.map((item) => (
+            <ListItem key={item.path} disablePadding>
+              <ListItemButton
+                component={Link}
+                to={item.path}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <ListItemIcon>
+                  <item.icon />
+                </ListItemIcon>
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+    </Drawer>
   );
 }

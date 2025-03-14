@@ -1,134 +1,178 @@
 import { useState } from 'react';
 import { TriviaRound, TriviaQuestion } from '../types/trivia';
 import QuestionEditor from './QuestionEditor';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Stack,
+  IconButton,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 
 interface RoundEditorProps {
-    round: TriviaRound;
-    onSave: (round: TriviaRound) => void;
-    onComplete: () => void;
+  round: TriviaRound;
+  onSave: (round: TriviaRound) => void;
+  onComplete: () => void;
 }
 
-export default function RoundEditor({ round, onSave, onComplete }: RoundEditorProps) {
-    const [editedRound, setEditedRound] = useState<TriviaRound>(round);
-    const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+export default function RoundEditor({
+  round,
+  onSave,
+  onComplete,
+}: RoundEditorProps) {
+  const [editedRound, setEditedRound] = useState<TriviaRound>(round);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
+    null
+  );
 
-    const addQuestion = () => {
-        const newQuestion: TriviaQuestion = {
-            id: crypto.randomUUID(),
-            questionText: '',
-            answerText: '',
-            points: 1,
-            type: 'multiple-choice',
-            difficulty: 'medium',
-            options: ['', '', '', '']
-        };
-        setEditedRound(prev => ({
-            ...prev,
-            questions: [...prev.questions, newQuestion]
-        }));
-        setEditingQuestionId(newQuestion.id);
+  const addQuestion = () => {
+    const newQuestion: TriviaQuestion = {
+      id: crypto.randomUUID(),
+      questionText: '',
+      answerText: '',
+      points: 1,
+      type: 'multiple-choice',
+      difficulty: 'medium',
+      options: ['', '', '', ''],
     };
+    setEditedRound((prev) => ({
+      ...prev,
+      questions: [...prev.questions, newQuestion],
+    }));
+    setEditingQuestionId(newQuestion.id);
+  };
 
-    const updateQuestion = (updatedQuestion: TriviaQuestion) => {
-        setEditedRound(prev => ({
-            ...prev,
-            questions: prev.questions.map(q =>
-                q.id === updatedQuestion.id ? updatedQuestion : q
-            )
-        }));
-        setEditingQuestionId(null);
-    };
+  const updateQuestion = (updatedQuestion: TriviaQuestion) => {
+    setEditedRound((prev) => ({
+      ...prev,
+      questions: prev.questions.map((q) =>
+        q.id === updatedQuestion.id ? updatedQuestion : q
+      ),
+    }));
+    setEditingQuestionId(null);
+  };
 
-    const deleteQuestion = (questionId: string) => {
-        setEditedRound(prev => ({
-            ...prev,
-            questions: prev.questions.filter(q => q.id !== questionId)
-        }));
-    };
+  const deleteQuestion = (questionId: string) => {
+    setEditedRound((prev) => ({
+      ...prev,
+      questions: prev.questions.filter((q) => q.id !== questionId),
+    }));
+  };
 
-    const handleSave = () => {
-        onSave(editedRound);
-        onComplete();
-    };
+  const handleSave = () => {
+    onSave(editedRound);
+    onComplete();
+  };
 
-    return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Editing Round: {editedRound.name}</h2>
-                <Button onClick={handleSave} variant="default">
-                    Complete Round
-                </Button>
-            </div>
+  return (
+    <Stack spacing={3}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="h5">Editing Round: {editedRound.name}</Typography>
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          startIcon={<AddIcon />}
+        >
+          Complete Round
+        </Button>
+      </Box>
 
-            {/* Round Details */}
-            <Card>
-                <CardContent className="space-y-2 pt-6">
-                    <input
-                        type="text"
-                        value={editedRound.name}
-                        onChange={e => setEditedRound(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Round Name"
-                        className="p-2 border rounded w-full"
-                    />
-                    <textarea
-                        value={editedRound.description || ''}
-                        onChange={e => setEditedRound(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Round Description"
-                        className="p-2 border rounded w-full"
-                    />
-                </CardContent>
-            </Card>
+      {/* Round Details */}
+      <Card>
+        <CardContent>
+          <Stack spacing={2}>
+            <TextField
+              fullWidth
+              value={editedRound.name}
+              onChange={(e) =>
+                setEditedRound((prev) => ({ ...prev, name: e.target.value }))
+              }
+              label="Round Name"
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              value={editedRound.description || ''}
+              onChange={(e) =>
+                setEditedRound((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              label="Round Description"
+            />
+          </Stack>
+        </CardContent>
+      </Card>
 
-            {/* Questions List */}
-            <div className="space-y-3">
-                {editedRound.questions.map(question => (
-                    <Card key={question.id}>
-                        <CardContent className="pt-6">
-                            {editingQuestionId === question.id ? (
-                                <QuestionEditor
-                                    question={question}
-                                    onSave={updateQuestion}
-                                    onCancel={() => setEditingQuestionId(null)}
-                                />
-                            ) : (
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="font-medium">{question.questionText || '(No question text)'}</p>
-                                        <p className="text-sm text-gray-600">
-                                            {question.type} - {question.points} points
-                                        </p>
-                                    </div>
-                                    <div className="space-x-2">
-                                        <Button
-                                            onClick={() => setEditingQuestionId(question.id)}
-                                            variant="secondary"
-                                            size="sm"
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            onClick={() => deleteQuestion(question.id)}
-                                            variant="destructive"
-                                            size="sm"
-                                        >
-                                            Delete
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                ))}
-                <Button
-                    onClick={addQuestion}
-                    variant="outline"
-                    className="w-full"
+      {/* Questions List */}
+      <Stack spacing={2}>
+        {editedRound.questions.map((question) => (
+          <Card key={question.id}>
+            <CardContent>
+              {editingQuestionId === question.id ? (
+                <QuestionEditor
+                  question={question}
+                  onSave={updateQuestion}
+                  onCancel={() => setEditingQuestionId(null)}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
                 >
-                    + Add New Question
-                </Button>
-            </div>
-        </div>
-    );
-} 
+                  <Box>
+                    <Typography variant="subtitle1">
+                      {question.questionText || '(No question text)'}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {question.type} - {question.points} points
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <IconButton
+                      onClick={() => setEditingQuestionId(question.id)}
+                      color="primary"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => deleteQuestion(question.id)}
+                      color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+        <Button
+          onClick={addQuestion}
+          variant="outlined"
+          fullWidth
+          startIcon={<AddIcon />}
+        >
+          Add New Question
+        </Button>
+      </Stack>
+    </Stack>
+  );
+}

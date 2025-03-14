@@ -1,53 +1,59 @@
 import {
+  Box,
+  Typography,
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
-} from '../components/ui/card';
+  Grid,
+} from '@mui/material';
 
 export default function Dashboard() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box>
+        <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+          Dashboard
+        </Typography>
+        <Typography color="text.secondary">
           Welcome to your trivia builder dashboard. Create and manage your
           trivia games from here.
-        </p>
-      </div>
+        </Typography>
+      </Box>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Quizzes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">
-              No quizzes created yet.
-            </p>
-          </CardContent>
-        </Card>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6} lg={4}>
+          <Card>
+            <CardHeader title="Recent Quizzes" />
+            <CardContent>
+              <Typography variant="body2" color="text.secondary">
+                No quizzes created yet.
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Active Games</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">No active games.</p>
-          </CardContent>
-        </Card>
+        <Grid item xs={12} md={6} lg={4}>
+          <Card>
+            <CardHeader title="Active Games" />
+            <CardContent>
+              <Typography variant="body2" color="text.secondary">
+                No active games.
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">
-              Create a new quiz or host a game.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        <Grid item xs={12} md={6} lg={4}>
+          <Card>
+            <CardHeader title="Quick Actions" />
+            <CardContent>
+              <Typography variant="body2" color="text.secondary">
+                Create a new quiz or host a game.
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }

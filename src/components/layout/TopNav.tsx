@@ -1,5 +1,6 @@
-import { Menu, User } from 'lucide-react';
-import { Button } from '../ui/button';
+import { AppBar, Toolbar, IconButton, Typography, Box } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 interface TopNavProps {
   onMenuClick: () => void;
@@ -7,27 +8,28 @@ interface TopNavProps {
 
 export default function TopNav({ onMenuClick }: TopNavProps) {
   return (
-    <nav className="bg-background/95 supports-[backdrop-filter]:bg-background/60 fixed top-0 right-0 left-0 z-50 h-16 border-b backdrop-blur">
-      <div className="flex h-full items-center px-4">
-        <Button
-          variant="ghost"
-          size="icon"
+    <AppBar position="fixed" sx={{ bgcolor: 'background.paper' }}>
+      <Toolbar>
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="menu"
           onClick={onMenuClick}
-          className="mr-4"
+          sx={{ mr: 2 }}
         >
-          <Menu className="h-6 w-6" />
-        </Button>
+          <MenuIcon />
+        </IconButton>
 
-        <div className="flex-1">
-          <h1 className="text-xl font-bold">Trivia Builder</h1>
-        </div>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          Trivia Builder
+        </Typography>
 
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon">
-            <User className="h-6 w-6" />
-          </Button>
-        </div>
-      </div>
-    </nav>
+        <Box>
+          <IconButton color="inherit">
+            <AccountCircleIcon />
+          </IconButton>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 }
