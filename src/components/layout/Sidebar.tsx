@@ -27,19 +27,25 @@ export default function Sidebar({ isOpen }: SidebarProps) {
     { icon: SettingsIcon, label: 'Settings', path: '/settings' },
   ];
 
+  const drawerWidth = 256;
+  const transition = '225ms cubic-bezier(0.4, 0, 0.6, 1) 0ms';
+
   return (
     <Drawer
-      variant="persistent"
+      variant="permanent"
       anchor="left"
       open={isOpen}
       sx={{
-        width: 256,
+        width: isOpen ? drawerWidth : 0,
         flexShrink: 0,
+        transition: `width ${transition}`,
         '& .MuiDrawer-paper': {
-          width: 256,
+          width: drawerWidth,
           boxSizing: 'border-box',
           borderRight: '1px solid',
           borderColor: 'divider',
+          transform: isOpen ? 'none' : 'translateX(-256px)',
+          transition: `transform ${transition}`,
         },
       }}
     >

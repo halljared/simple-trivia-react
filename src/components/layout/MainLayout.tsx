@@ -17,21 +17,16 @@ export default function MainLayout() {
     >
       <CssBaseline />
       <TopNav onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-      <Box sx={{ display: 'flex', width: '100%' }}>
-        <Sidebar isOpen={sidebarOpen} />
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            mt: 8,
-            transition: 'margin 225ms cubic-bezier(0.4, 0, 0.6, 1) 0ms',
-            marginLeft: sidebarOpen ? '256px' : 0,
-            width: sidebarOpen ? 'calc(100% - 256px)' : '100%',
-          }}
-        >
-          <Outlet />
-        </Box>
+      <Sidebar isOpen={sidebarOpen} />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          mt: 8, // Height of the AppBar
+        }}
+      >
+        <Outlet />
       </Box>
     </Box>
   );
