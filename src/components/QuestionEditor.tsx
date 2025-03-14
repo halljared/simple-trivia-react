@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { TextField, FormControl, InputLabel, Select, MenuItem, Button, Box } from "@mui/material";
 import { TriviaQuestion } from '../types/trivia';
 
 interface QuestionEditorProps {
@@ -14,32 +12,35 @@ export default function QuestionEditor({ question, onSave, onCancel }: QuestionE
     const [editedQuestion, setEditedQuestion] = useState<TriviaQuestion>(question);
 
     return (
-        <div className="space-y-3">
-            <Input
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <TextField
+                fullWidth
                 value={editedQuestion.questionText}
                 onChange={e => setEditedQuestion(prev => ({ ...prev, questionText: e.target.value }))}
                 placeholder="Question Text"
+                label="Question Text"
             />
             
-            <Select
-                value={editedQuestion.type}
-                onValueChange={(value) => setEditedQuestion(prev => ({ ...prev, type: value as TriviaQuestion['type'] }))}
-            >
-                <SelectTrigger>
-                    <SelectValue placeholder="Select question type" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="multiple-choice">Multiple Choice</SelectItem>
-                    <SelectItem value="true-false">True/False</SelectItem>
-                    <SelectItem value="open-ended">Open Ended</SelectItem>
-                </SelectContent>
-            </Select>
+            <FormControl fullWidth>
+                <InputLabel id="question-type-label">Question Type</InputLabel>
+                <Select
+                    labelId="question-type-label"
+                    value={editedQuestion.type}
+                    label="Question Type"
+                    onChange={(e) => setEditedQuestion(prev => ({ ...prev, type: e.target.value as TriviaQuestion['type'] }))}
+                >
+                    <MenuItem value="multiple-choice">Multiple Choice</MenuItem>
+                    <MenuItem value="true-false">True/False</MenuItem>
+                    <MenuItem value="open-ended">Open Ended</MenuItem>
+                </Select>
+            </FormControl>
 
             {editedQuestion.type === 'multiple-choice' && (
-                <div className="space-y-2">
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     {editedQuestion.options?.map((option, index) => (
-                        <Input
+                        <TextField
                             key={index}
+                            fullWidth
                             value={option}
                             onChange={e => {
                                 const newOptions = [...(editedQuestion.options || [])];
@@ -47,30 +48,34 @@ export default function QuestionEditor({ question, onSave, onCancel }: QuestionE
                                 setEditedQuestion(prev => ({ ...prev, options: newOptions }));
                             }}
                             placeholder={`Option ${index + 1}`}
+                            label={`Option ${index + 1}`}
                         />
                     ))}
-                </div>
+                </Box>
             )}
 
-            <Input
-                value={editedQuestion.correctAnswer}
-                onChange={e => setEditedQuestion(prev => ({ ...prev, correctAnswer: e.target.value }))}
+            <TextField
+                fullWidth
+                value={editedQuestion.answer}
+                onChange={e => setEditedQuestion(prev => ({ ...prev, answer: e.target.value }))}
                 placeholder="Correct Answer"
+                label="Correct Answer"
             />
 
-            <div className="flex justify-end space-x-2">
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                 <Button
-                    variant="outline"
+                    variant="outlined"
                     onClick={onCancel}
                 >
                     Cancel
                 </Button>
                 <Button
+                    variant="contained"
                     onClick={() => onSave(editedQuestion)}
                 >
                     Save Question
                 </Button>
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 } 
