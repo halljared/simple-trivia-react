@@ -9,25 +9,21 @@ export default function QuestionEditor() {
   const navigate = useNavigate();
   const { eventId, roundId } = questionEditorRoute.useParams();
   const [round, setRound] = useState<TriviaRound | null>(null);
-  const { currentEvent, setEvent, updateRound } = useEventStore();
+  const { currentEvent, updateRound, loadEvent } = useEventStore();
 
   useEffect(() => {
     // If we don't have the event in the store, get it from localStorage
     if (!currentEvent) {
-      const storedEvent = localStorage.getItem(`event-${eventId}`);
-      if (storedEvent) {
-        const parsedEvent = JSON.parse(storedEvent);
-        setEvent(parsedEvent);
-      }
+      loadEvent(eventId);
     }
 
-    // Set the round from either the store or localStorage
-    const event =
-      currentEvent ||
-      JSON.parse(localStorage.getItem(`event-${eventId}`) || '{}');
-    const foundRound = event.rounds?.find((r: TriviaRound) => r.id === roundId);
+    // Set the round from the store
+    const event = currentEvent;
+    const foundRound = event?.rounds?.find(
+      (r: TriviaRound) => r.id === roundId
+    );
     setRound(foundRound || null);
-  }, [eventId, roundId, currentEvent, setEvent]);
+  }, [eventId, roundId, currentEvent, loadEvent]);
 
   const handleSave = (updatedRound: TriviaRound) => {
     updateRound(updatedRound);

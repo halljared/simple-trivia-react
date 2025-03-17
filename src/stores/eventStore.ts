@@ -6,6 +6,7 @@ interface EventStore {
   setEvent: (event: TriviaEvent) => void;
   updateRound: (round: TriviaRound) => void;
   deleteRound: (roundId: string) => void;
+  loadEvent: (eventId: string) => TriviaEvent | null;
 }
 
 export const useEventStore = create<EventStore>((set) => ({
@@ -13,6 +14,15 @@ export const useEventStore = create<EventStore>((set) => ({
   setEvent: (event) => {
     set({ currentEvent: event });
     localStorage.setItem(`event-${event.id}`, JSON.stringify(event));
+  },
+  loadEvent: (eventId: string) => {
+    const storedEvent = localStorage.getItem(`event-${eventId}`);
+    if (storedEvent) {
+      const parsedEvent = JSON.parse(storedEvent);
+      set({ currentEvent: parsedEvent });
+      return parsedEvent;
+    }
+    return null;
   },
   updateRound: (updatedRound) =>
     set((state) => {
