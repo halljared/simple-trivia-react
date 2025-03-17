@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { TriviaEvent, TriviaRound } from '../types/trivia';
-import RoundEditor from '../components/RoundEditor';
 import RoundList from '../components/RoundList';
 import { Box, Typography, TextField, Paper } from '@mui/material';
 
 export default function EventConfig() {
+  const navigate = useNavigate();
   const [event, setEvent] = useState<TriviaEvent>({
     id: crypto.randomUUID(),
     name: '',
@@ -13,28 +14,41 @@ export default function EventConfig() {
     rounds: [],
     status: 'upcoming',
   });
-  const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
 
-  const addNewRound = () => {
-    const newRound: TriviaRound = {
-      id: crypto.randomUUID(),
-      name: `Round ${event.rounds.length + 1}`,
-      roundNumber: event.rounds.length + 1,
-      questions: [],
-    };
-    setEvent((prev) => ({
-      ...prev,
-      rounds: [...prev.rounds, newRound],
-    }));
-  };
+  // Load event from localStorage if it exists
+  useEffect(() => {
+    const storedEvent = localStorage.getItem(`event-${event.id}`);
+    if (storedEvent) {
+      setEvent(JSON.parse(storedEvent));
+    }
+  }, []);
+
+  // Save event to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(`event-${event.id}`, JSON.stringify(event));
+  }, [event]);
 
   const updateRound = (updatedRound: TriviaRound) => {
-    setEvent((prev) => ({
-      ...prev,
-      rounds: prev.rounds.map((r) =>
-        r.id === updatedRound.id ? updatedRound : r
-      ),
-    }));
+    setEvent((prev) => {
+      const existingRoundIndex = prev.rounds.findIndex(
+        (r) => r.id === updatedRound.id
+      );
+      if (existingRoundIndex === -1) {
+        // Add new round
+        return {
+          ...prev,
+          rounds: [...prev.rounds, updatedRound],
+        };
+      } else {
+        // Update existing round
+        return {
+          ...prev,
+          rounds: prev.rounds.map((r) =>
+            r.id === updatedRound.id ? updatedRound : r
+          ),
+        };
+      }
+    });
   };
 
   const deleteRound = (roundId: string) => {
@@ -42,9 +56,12 @@ export default function EventConfig() {
       ...prev,
       rounds: prev.rounds.filter((r) => r.id !== roundId),
     }));
-    if (selectedRoundId === roundId) {
-      setSelectedRoundId(null);
-    }
+  };
+
+  const handleEditRound = (roundId: string) => {
+    navigate({
+      to: `/events/${event.id}/rounds/${roundId}`,
+    });
   };
 
   return (
@@ -66,20 +83,12 @@ export default function EventConfig() {
         {/* Add other event fields as needed */}
       </Paper>
 
-      {selectedRoundId ? (
-        <RoundEditor
-          round={event.rounds.find((r) => r.id === selectedRoundId)!}
-          onSave={updateRound}
-          onComplete={() => setSelectedRoundId(null)}
-        />
-      ) : (
-        <RoundList
-          rounds={event.rounds}
-          onAddRound={addNewRound}
-          onEditRound={setSelectedRoundId}
-          onDeleteRound={deleteRound}
-        />
-      )}
+      <RoundList
+        event={event}
+        onEditRound={handleEditRound}
+        onUpdateRound={updateRound}
+        onDeleteRound={deleteRound}
+      />
     </Box>
   );
 }

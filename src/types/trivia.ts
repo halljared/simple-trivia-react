@@ -20,7 +20,6 @@ export interface TriviaQuestion {
   id: string;
   questionText: string;
   answerText: string;
-  points: number;
   type: 'multiple-choice' | 'true-false' | 'open-ended';
   difficulty: string;
   options?: string[];

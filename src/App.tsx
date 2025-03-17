@@ -2,15 +2,46 @@ import {
   RouterProvider,
   createRootRoute,
   createRoute,
-  Router,
+  createRouter,
 } from '@tanstack/react-router';
 import MainLayout from '@/components/layout/MainLayout';
 import Dashboard from '@/pages/Dashboard';
 import EventConfig from '@/pages/EventConfig';
+import QuestionEditor from '@/pages/QuestionEditor';
+import { Box, Typography, Button } from '@mui/material';
+
+function NotFound() {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: 2,
+      }}
+    >
+      <Typography variant="h2" component="h1">
+        404
+      </Typography>
+      <Typography variant="h5" component="h2">
+        Page Not Found
+      </Typography>
+      <Typography color="text.secondary" sx={{ mb: 2 }}>
+        The page you're looking for doesn't exist or has been moved.
+      </Typography>
+      <Button variant="contained" href="/">
+        Go to Home
+      </Button>
+    </Box>
+  );
+}
 
 // Create a root route
 const rootRoute = createRootRoute({
   component: MainLayout,
+  notFoundComponent: NotFound,
 });
 
 // Create routes for each page
@@ -23,7 +54,7 @@ const indexRoute = createRoute({
 const createQuizRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/create',
-  component: () => <EventConfig />,
+  component: EventConfig,
 });
 
 const hostRoute = createRoute({
@@ -44,6 +75,20 @@ const settingsRoute = createRoute({
   component: () => <div className="p-4">Settings Content</div>,
 });
 
+const questionEditorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/events/$eventId/rounds/$roundId',
+  validateSearch: () => ({}),
+  parseParams: (params: Record<string, string>) => ({
+    eventId: params.eventId,
+    roundId: params.roundId,
+  }),
+  stringifyParams: (params: { eventId: string; roundId: string }) => params,
+  component: QuestionEditor,
+});
+
+export { questionEditorRoute, createQuizRoute };
+
 // Create the route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -51,10 +96,15 @@ const routeTree = rootRoute.addChildren([
   hostRoute,
   quizzesRoute,
   settingsRoute,
+  questionEditorRoute,
 ]);
 
 // Create the router
-const router = new Router({ routeTree });
+const router = createRouter({
+  routeTree,
+  defaultPreload: 'intent',
+  defaultNotFoundComponent: NotFound,
+});
 
 // Register router types
 declare module '@tanstack/react-router' {

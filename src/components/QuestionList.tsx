@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { TriviaRound, TriviaQuestion } from '../types/trivia';
+import { useState, useEffect } from 'react';
+import { TriviaRound, TriviaQuestion, TriviaEvent } from '../types/trivia';
 import { useTriviaStore } from '../stores/triviaStore';
 import QuestionEditor from './QuestionEditor';
 import {
@@ -12,44 +12,35 @@ import {
   Stack,
   IconButton,
   FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  Autocomplete,
+  Breadcrumbs,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
-interface RoundEditorProps {
+interface QuestionListProps {
+  event: TriviaEvent;
   round: TriviaRound;
   onSave: (round: TriviaRound) => void;
-  onComplete: () => void;
+  onBack: () => void;
 }
 
-export default function RoundEditor({
+export default function QuestionList({
+  event,
   round,
   onSave,
-  onComplete,
-}: RoundEditorProps) {
+  onBack,
+}: QuestionListProps) {
   const [editedRound, setEditedRound] = useState<TriviaRound>(round);
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
     null
   );
   const [questionCount, setQuestionCount] = useState<number>(10);
-  const [categorySearch, setCategorySearch] = useState('');
 
   const { categories, fetchCategories, fetchQuestionsForCategory } =
     useTriviaStore();
-
-  const filteredCategories = useMemo(
-    () =>
-      categories
-        .filter((cat) =>
-          cat.name.toLowerCase().includes(categorySearch.toLowerCase())
-        )
-        .sort((a, b) => b.question_count - a.question_count),
-    [categories, categorySearch]
-  );
 
   useEffect(() => {
     fetchCategories();
@@ -62,7 +53,6 @@ export default function RoundEditor({
         id: crypto.randomUUID(),
         questionText: '',
         answerText: '',
-        points: 1,
         type: 'open-ended',
         difficulty: 'medium',
       }));
@@ -84,9 +74,9 @@ export default function RoundEditor({
     setEditedRound((prev) => ({
       ...prev,
       questions: prev.questions.map((q, index) => {
-        if (q.questionText) return q; // Keep existing questions
+        if (q.questionText) return q;
         const apiQ = apiQuestions[index];
-        if (!apiQ) return q; // Keep original if no API question available
+        if (!apiQ) return q;
 
         return {
           ...q,
@@ -94,7 +84,6 @@ export default function RoundEditor({
           answerText: apiQ.answerText,
           type: apiQ.type || q.type,
           difficulty: apiQ.difficulty || q.difficulty,
-          points: apiQ.points || q.points,
         };
       }),
     }));
@@ -119,6 +108,14 @@ export default function RoundEditor({
 
   return (
     <Stack spacing={3}>
+      <Box>
+        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
+          <Typography color="text.secondary">{event.name}</Typography>
+          <Typography color="text.secondary">{round.name}</Typography>
+          <Typography color="text.primary">Questions</Typography>
+        </Breadcrumbs>
+      </Box>
+
       <Box
         sx={{
           display: 'flex',
@@ -126,67 +123,51 @@ export default function RoundEditor({
           alignItems: 'center',
         }}
       >
-        <Typography variant="h5">Editing Round: {editedRound.name}</Typography>
-        <Button variant="contained" onClick={() => onSave(editedRound)}>
-          Complete Round
-        </Button>
+        <Typography variant="h5">Configure Questions</Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button variant="outlined" onClick={onBack}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={() => onSave(editedRound)}>
+            Save Questions
+          </Button>
+        </Box>
       </Box>
 
       <Card>
         <CardContent>
           <Stack spacing={2}>
-            <TextField
-              fullWidth
-              value={editedRound.name}
-              onChange={(e) =>
-                setEditedRound((prev) => ({ ...prev, name: e.target.value }))
-              }
-              label="Round Name"
-            />
-
             <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={editedRound.categoryId || ''}
-                onChange={(e) =>
+              <Autocomplete
+                value={
+                  categories.find((cat) => cat.id === editedRound.categoryId) ||
+                  null
+                }
+                onChange={(_, newValue) => {
                   setEditedRound((prev) => ({
                     ...prev,
-                    categoryId: e.target.value as number,
-                  }))
+                    categoryId: newValue?.id || undefined,
+                  }));
+                }}
+                options={categories.sort(
+                  (a, b) => b.question_count - a.question_count
+                )}
+                getOptionLabel={(option) =>
+                  `${option.name} (${option.question_count} questions)`
                 }
-                label="Category"
-                MenuProps={{
-                  PaperProps: {
-                    style: {
-                      maxHeight: 300,
-                    },
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Category"
+                    placeholder="Search categories..."
+                  />
+                )}
+                ListboxProps={{
+                  style: {
+                    maxHeight: 300,
                   },
                 }}
-              >
-                <MenuItem>
-                  <TextField
-                    size="small"
-                    placeholder="Search categories..."
-                    value={categorySearch}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      setCategorySearch(e.target.value);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    fullWidth
-                    sx={{ mb: 1 }}
-                  />
-                </MenuItem>
-                {filteredCategories.map((category) => (
-                  <MenuItem
-                    key={category.id}
-                    value={category.id}
-                    sx={{ py: 1 }}
-                  >
-                    {category.name} ({category.question_count} questions)
-                  </MenuItem>
-                ))}
-              </Select>
+              />
             </FormControl>
 
             <Box sx={{ display: 'flex', gap: 2 }}>
@@ -243,7 +224,7 @@ export default function RoundEditor({
                       {question.questionText || '(Empty question)'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {question.type} - {question.points} points
+                      {question.type}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', gap: 1 }}>
