@@ -1,52 +1,46 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
-import { TriviaEvent, TriviaRound } from '../types/trivia';
+import { TriviaRound } from '../types/trivia';
 import QuestionList from '../components/QuestionList';
 import { questionEditorRoute, createQuizRoute } from '../App';
+import { useEventStore } from '../stores/eventStore';
 
 export default function QuestionEditor() {
   const navigate = useNavigate();
   const { eventId, roundId } = questionEditorRoute.useParams();
-  const [event, setEvent] = useState<TriviaEvent | null>(null);
   const [round, setRound] = useState<TriviaRound | null>(null);
+  const { currentEvent, setEvent, updateRound } = useEventStore();
 
-  // TODO: Replace with actual API call
   useEffect(() => {
-    // For now, get from localStorage
-    const storedEvent = localStorage.getItem(`event-${eventId}`);
-    if (storedEvent) {
-      const parsedEvent = JSON.parse(storedEvent);
-      setEvent(parsedEvent);
-      const foundRound = parsedEvent.rounds.find(
-        (r: TriviaRound) => r.id === roundId
-      );
-      setRound(foundRound || null);
+    // If we don't have the event in the store, get it from localStorage
+    if (!currentEvent) {
+      const storedEvent = localStorage.getItem(`event-${eventId}`);
+      if (storedEvent) {
+        const parsedEvent = JSON.parse(storedEvent);
+        setEvent(parsedEvent);
+      }
     }
-  }, [eventId, roundId]);
+
+    // Set the round from either the store or localStorage
+    const event =
+      currentEvent ||
+      JSON.parse(localStorage.getItem(`event-${eventId}`) || '{}');
+    const foundRound = event.rounds?.find((r: TriviaRound) => r.id === roundId);
+    setRound(foundRound || null);
+  }, [eventId, roundId, currentEvent, setEvent]);
 
   const handleSave = (updatedRound: TriviaRound) => {
-    if (!event) return;
-
-    const updatedEvent = {
-      ...event,
-      rounds: event.rounds.map((r) =>
-        r.id === updatedRound.id ? updatedRound : r
-      ),
-    };
-
-    // TODO: Replace with actual API call
-    localStorage.setItem(`event-${eventId}`, JSON.stringify(updatedEvent));
-    setEvent(updatedEvent);
+    updateRound(updatedRound);
     navigate({ to: createQuizRoute.id });
   };
 
-  if (!event || !round) {
+  if (!currentEvent || !round) {
     return <div>Loading...</div>;
   }
 
   return (
     <QuestionList
-      event={event}
+      event={currentEvent}
       round={round}
       onSave={handleSave}
       onBack={() => navigate({ to: createQuizRoute.id })}

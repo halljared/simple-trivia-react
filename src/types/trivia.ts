@@ -38,3 +38,23 @@ export interface TriviaQuestionAPI {
   category: string;
   difficulty: string;
 }
+
+export enum QuestionType {
+  MULTIPLE_CHOICE = 'Multiple Choice',
+  TRUE_FALSE = 'True/False',
+  OPEN_ENDED = 'Open Ended',
+  // Add other types as needed
+}
+
+export enum QuestionDifficulty {
+  EASY = 'Easy',
+  MEDIUM = 'Medium',
+  HARD = 'Hard',
+}
+
+export interface Question {
+  id: string;
+  type: QuestionType;
+  difficulty: QuestionDifficulty;
+  // ... other question properties
+}

@@ -12,6 +12,9 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import QuizIcon from '@mui/icons-material/Quiz';
 
 interface RoundListProps {
   event: TriviaEvent;
@@ -67,64 +70,109 @@ export default function RoundList({
       </Box>
 
       <Stack spacing={2}>
-        {event.rounds.map((round) => (
-          <Card key={round.id}>
-            <CardContent>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Box sx={{ flexGrow: 1 }}>
-                  {editingRoundId === round.id ? (
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                      <TextField
-                        fullWidth
-                        value={editedRoundName}
-                        onChange={(e) => setEditedRoundName(e.target.value)}
-                        size="small"
-                      />
-                      <Button onClick={() => saveRoundName(round)}>Save</Button>
-                      <Button onClick={() => setEditingRoundId(null)}>
-                        Cancel
-                      </Button>
-                    </Box>
-                  ) : (
-                    <>
-                      <Typography variant="h6">{round.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {round.questions.length} questions
-                        {round.categoryId && ' • From category'}
-                      </Typography>
-                    </>
-                  )}
+        {event.rounds.map((round) => {
+          console.log('Round questions:', round.questions);
+          return (
+            <Card key={round.id}>
+              <CardContent>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    minHeight: '48px',
+                  }}
+                >
+                  <Box sx={{ flexGrow: 1 }}>
+                    {editingRoundId === round.id ? (
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Box sx={{ flexGrow: 1 }}>
+                          <TextField
+                            fullWidth
+                            value={editedRoundName}
+                            onChange={(e) => setEditedRoundName(e.target.value)}
+                            size="small"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveRoundName(round);
+                              if (e.key === 'Escape') setEditingRoundId(null);
+                            }}
+                            autoFocus
+                            sx={{
+                              '& .MuiInputBase-root': {
+                                height: '32px',
+                              },
+                              mb: '4px',
+                            }}
+                          />
+                          <Typography variant="body2" color="text.secondary">
+                            {round.questions.length} questions
+                            {round.categoryId && ' • From category'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <>
+                        <Typography variant="h6" sx={{ mb: '4px' }}>
+                          {round.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {round.questions.length} questions
+                          {round.categoryId &&
+                            ` • From category ${round.categoryId}`}
+                        </Typography>
+                      </>
+                    )}
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    {/* Edit mode buttons */}
+                    <IconButton
+                      size="small"
+                      onClick={() => saveRoundName(round)}
+                      color="primary"
+                      sx={{
+                        display: editingRoundId === round.id ? 'flex' : 'none',
+                      }}
+                    >
+                      <CheckIcon />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      onClick={() => setEditingRoundId(null)}
+                      sx={{
+                        display: editingRoundId === round.id ? 'flex' : 'none',
+                      }}
+                    >
+                      <CloseIcon />
+                    </IconButton>
+
+                    {/* Normal mode buttons */}
+                    <IconButton
+                      onClick={() => startEditing(round)}
+                      color="primary"
+                      sx={{
+                        display: editingRoundId === round.id ? 'none' : 'flex',
+                      }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => onEditRound(round.id)}
+                      color="primary"
+                    >
+                      <QuizIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => onDeleteRound(round.id)}
+                      color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
                 </Box>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    variant="outlined"
-                    onClick={() => onEditRound(round.id)}
-                  >
-                    Configure Questions
-                  </Button>
-                  <IconButton
-                    onClick={() => startEditing(round)}
-                    color="primary"
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => onDeleteRound(round.id)}
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </Stack>
     </Stack>
   );

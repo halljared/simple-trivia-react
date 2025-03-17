@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { TriviaRound, TriviaQuestion, TriviaEvent } from '../types/trivia';
 import { useTriviaStore } from '../stores/triviaStore';
 import QuestionEditor from './QuestionEditor';
+import { QuestionItem } from './QuestionItem';
 import {
   Box,
   Typography,
@@ -215,19 +216,20 @@ export default function QuestionList({
                   sx={{
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center',
+                    alignItems: 'flex-start',
                   }}
                 >
-                  <Box>
-                    <Typography variant="subtitle1">
-                      Question {index + 1}:{' '}
-                      {question.questionText || '(Empty question)'}
+                  <Box sx={{ flex: 1 }}>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Question {index + 1}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {question.type}
-                    </Typography>
+                    <QuestionItem question={question} />
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
                     <IconButton
                       onClick={() => setEditingQuestionId(question.id)}
                       color="primary"
