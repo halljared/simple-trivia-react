@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { TriviaRound, TriviaQuestion } from '../types/trivia';
 import { useTriviaStore } from '../stores/triviaStore';
 import QuestionEditor from './QuestionEditor';
@@ -36,9 +36,20 @@ export default function RoundEditor({
     null
   );
   const [questionCount, setQuestionCount] = useState<number>(10);
+  const [categorySearch, setCategorySearch] = useState('');
 
   const { categories, fetchCategories, fetchQuestionsForCategory } =
     useTriviaStore();
+
+  const filteredCategories = useMemo(
+    () =>
+      categories
+        .filter((cat) =>
+          cat.name.toLowerCase().includes(categorySearch.toLowerCase())
+        )
+        .sort((a, b) => b.question_count - a.question_count),
+    [categories, categorySearch]
+  );
 
   useEffect(() => {
     fetchCategories();
@@ -72,9 +83,20 @@ export default function RoundEditor({
 
     setEditedRound((prev) => ({
       ...prev,
-      questions: prev.questions.map((q, index) =>
-        q.questionText ? q : apiQuestions[index] || q
-      ),
+      questions: prev.questions.map((q, index) => {
+        if (q.questionText) return q; // Keep existing questions
+        const apiQ = apiQuestions[index];
+        if (!apiQ) return q; // Keep original if no API question available
+
+        return {
+          ...q,
+          questionText: apiQ.questionText,
+          answerText: apiQ.answerText,
+          type: apiQ.type || q.type,
+          difficulty: apiQ.difficulty || q.difficulty,
+          points: apiQ.points || q.points,
+        };
+      }),
     }));
   };
 
@@ -133,9 +155,34 @@ export default function RoundEditor({
                   }))
                 }
                 label="Category"
+                MenuProps={{
+                  PaperProps: {
+                    style: {
+                      maxHeight: 300,
+                    },
+                  },
+                }}
               >
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
+                <MenuItem>
+                  <TextField
+                    size="small"
+                    placeholder="Search categories..."
+                    value={categorySearch}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      setCategorySearch(e.target.value);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    fullWidth
+                    sx={{ mb: 1 }}
+                  />
+                </MenuItem>
+                {filteredCategories.map((category) => (
+                  <MenuItem
+                    key={category.id}
+                    value={category.id}
+                    sx={{ py: 1 }}
+                  >
                     {category.name} ({category.question_count} questions)
                   </MenuItem>
                 ))}

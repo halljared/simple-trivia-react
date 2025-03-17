@@ -37,7 +37,7 @@ export const useTriviaStore = create<TriviaStore>((set) => ({
       return questions.map((q) => ({
         id: crypto.randomUUID(),
         questionText: q.question,
-        answerText: '', // This will be filled when we get the answer from check-answer endpoint
+        answerText: q.answer,
         type: 'open-ended',
         points: 1,
         difficulty: q.difficulty,

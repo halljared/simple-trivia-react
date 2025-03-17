@@ -35,6 +35,7 @@ export interface TriviaCategory {
 export interface TriviaQuestionAPI {
   id: number;
   question: string;
+  answer: string;
   category: string;
   difficulty: string;
 }
