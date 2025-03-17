@@ -1,13 +1,5 @@
 import { useState } from 'react';
-import {
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
-  Box,
-} from '@mui/material';
+import { TextField, Button, Box, Stack } from '@mui/material';
 import { TriviaQuestion } from '../types/trivia';
 
 interface QuestionEditorProps {
@@ -25,9 +17,11 @@ export default function QuestionEditor({
     useState<TriviaQuestion>(question);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Stack spacing={2}>
       <TextField
         fullWidth
+        multiline
+        rows={2}
         value={editedQuestion.questionText}
         onChange={(e) =>
           setEditedQuestion((prev) => ({
@@ -35,56 +29,32 @@ export default function QuestionEditor({
             questionText: e.target.value,
           }))
         }
-        placeholder="Question Text"
         label="Question Text"
       />
-
-      <FormControl fullWidth>
-        <InputLabel id="question-type-label">Question Type</InputLabel>
-        <Select
-          labelId="question-type-label"
-          value={editedQuestion.type}
-          label="Question Type"
-          onChange={(e) =>
-            setEditedQuestion((prev) => ({
-              ...prev,
-              type: e.target.value as TriviaQuestion['type'],
-            }))
-          }
-        >
-          <MenuItem value="multiple-choice">Multiple Choice</MenuItem>
-          <MenuItem value="true-false">True/False</MenuItem>
-          <MenuItem value="open-ended">Open Ended</MenuItem>
-        </Select>
-      </FormControl>
-
-      {editedQuestion.type === 'multiple-choice' && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {editedQuestion.options?.map((option, index) => (
-            <TextField
-              key={index}
-              fullWidth
-              value={option}
-              onChange={(e) => {
-                const newOptions = [...(editedQuestion.options || [])];
-                newOptions[index] = e.target.value;
-                setEditedQuestion((prev) => ({ ...prev, options: newOptions }));
-              }}
-              placeholder={`Option ${index + 1}`}
-              label={`Option ${index + 1}`}
-            />
-          ))}
-        </Box>
-      )}
 
       <TextField
         fullWidth
         value={editedQuestion.answerText}
         onChange={(e) =>
-          setEditedQuestion((prev) => ({ ...prev, answerText: e.target.value }))
+          setEditedQuestion((prev) => ({
+            ...prev,
+            answerText: e.target.value,
+          }))
         }
-        placeholder="Correct Answer"
         label="Correct Answer"
+      />
+
+      <TextField
+        type="number"
+        value={editedQuestion.points}
+        onChange={(e) =>
+          setEditedQuestion((prev) => ({
+            ...prev,
+            points: parseInt(e.target.value) || 1,
+          }))
+        }
+        label="Points"
+        sx={{ width: 200 }}
       />
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
@@ -95,6 +65,6 @@ export default function QuestionEditor({
           Save Question
         </Button>
       </Box>
-    </Box>
+    </Stack>
   );
 }

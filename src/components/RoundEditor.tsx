@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TriviaRound, TriviaQuestion } from '../types/trivia';
+import { useTriviaStore } from '../stores/triviaStore';
 import QuestionEditor from './QuestionEditor';
 import {
   Box,
@@ -10,10 +11,14 @@ import {
   TextField,
   Stack,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 interface RoundEditorProps {
   round: TriviaRound;
@@ -30,22 +35,47 @@ export default function RoundEditor({
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
     null
   );
+  const [questionCount, setQuestionCount] = useState<number>(10);
 
-  const addQuestion = () => {
-    const newQuestion: TriviaQuestion = {
-      id: crypto.randomUUID(),
-      questionText: '',
-      answerText: '',
-      points: 1,
-      type: 'multiple-choice',
-      difficulty: 'medium',
-      options: ['', '', '', ''],
-    };
+  const { categories, fetchCategories, fetchQuestionsForCategory } =
+    useTriviaStore();
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  const initializeEmptyQuestions = (count: number) => {
+    const emptyQuestions: TriviaQuestion[] = Array(count)
+      .fill(null)
+      .map(() => ({
+        id: crypto.randomUUID(),
+        questionText: '',
+        answerText: '',
+        points: 1,
+        type: 'open-ended',
+        difficulty: 'medium',
+      }));
+
     setEditedRound((prev) => ({
       ...prev,
-      questions: [...prev.questions, newQuestion],
+      questions: emptyQuestions,
     }));
-    setEditingQuestionId(newQuestion.id);
+  };
+
+  const fillQuestionsFromAPI = async () => {
+    if (!editedRound.categoryId) return;
+
+    const apiQuestions = await fetchQuestionsForCategory(
+      editedRound.categoryId,
+      editedRound.questions.length
+    );
+
+    setEditedRound((prev) => ({
+      ...prev,
+      questions: prev.questions.map((q, index) =>
+        q.questionText ? q : apiQuestions[index] || q
+      ),
+    }));
   };
 
   const updateQuestion = (updatedQuestion: TriviaQuestion) => {
@@ -65,11 +95,6 @@ export default function RoundEditor({
     }));
   };
 
-  const handleSave = () => {
-    onSave(editedRound);
-    onComplete();
-  };
-
   return (
     <Stack spacing={3}>
       <Box
@@ -80,16 +105,11 @@ export default function RoundEditor({
         }}
       >
         <Typography variant="h5">Editing Round: {editedRound.name}</Typography>
-        <Button
-          variant="contained"
-          onClick={handleSave}
-          startIcon={<AddIcon />}
-        >
+        <Button variant="contained" onClick={() => onSave(editedRound)}>
           Complete Round
         </Button>
       </Box>
 
-      {/* Round Details */}
       <Card>
         <CardContent>
           <Stack spacing={2}>
@@ -101,26 +121,59 @@ export default function RoundEditor({
               }
               label="Round Name"
             />
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              value={editedRound.description || ''}
-              onChange={(e) =>
-                setEditedRound((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              label="Round Description"
-            />
+
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+              <Select
+                value={editedRound.categoryId || ''}
+                onChange={(e) =>
+                  setEditedRound((prev) => ({
+                    ...prev,
+                    categoryId: e.target.value as number,
+                  }))
+                }
+                label="Category"
+              >
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name} ({category.question_count} questions)
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                type="number"
+                label="Number of Questions"
+                value={questionCount}
+                onChange={(e) =>
+                  setQuestionCount(parseInt(e.target.value) || 0)
+                }
+                sx={{ width: 200 }}
+              />
+              <Button
+                variant="outlined"
+                onClick={() => initializeEmptyQuestions(questionCount)}
+              >
+                Initialize Questions
+              </Button>
+              {editedRound.categoryId && (
+                <Button
+                  variant="contained"
+                  startIcon={<AutorenewIcon />}
+                  onClick={fillQuestionsFromAPI}
+                >
+                  Fill Empty Questions from API
+                </Button>
+              )}
+            </Box>
           </Stack>
         </CardContent>
       </Card>
 
-      {/* Questions List */}
       <Stack spacing={2}>
-        {editedRound.questions.map((question) => (
+        {editedRound.questions.map((question, index) => (
           <Card key={question.id}>
             <CardContent>
               {editingQuestionId === question.id ? (
@@ -139,7 +192,8 @@ export default function RoundEditor({
                 >
                   <Box>
                     <Typography variant="subtitle1">
-                      {question.questionText || '(No question text)'}
+                      Question {index + 1}:{' '}
+                      {question.questionText || '(Empty question)'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {question.type} - {question.points} points
@@ -164,14 +218,6 @@ export default function RoundEditor({
             </CardContent>
           </Card>
         ))}
-        <Button
-          onClick={addQuestion}
-          variant="outlined"
-          fullWidth
-          startIcon={<AddIcon />}
-        >
-          Add New Question
-        </Button>
       </Stack>
     </Stack>
   );
