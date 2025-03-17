@@ -37,7 +37,7 @@ export default function QuestionEditor() {
     // TODO: Replace with actual API call
     localStorage.setItem(`event-${eventId}`, JSON.stringify(updatedEvent));
     setEvent(updatedEvent);
-    navigate({ to: createQuizRoute.path });
+    navigate({ to: createQuizRoute.id });
   };
 
   if (!event || !round) {
@@ -49,7 +49,7 @@ export default function QuestionEditor() {
       event={event}
       round={round}
       onSave={handleSave}
-      onBack={() => navigate({ to: createQuizRoute.path })}
+      onBack={() => navigate({ to: createQuizRoute.id })}
     />
   );
 }

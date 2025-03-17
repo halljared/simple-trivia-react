@@ -44,19 +44,6 @@ export default function QuestionEditor({
         label="Correct Answer"
       />
 
-      <TextField
-        type="number"
-        value={editedQuestion.points}
-        onChange={(e) =>
-          setEditedQuestion((prev) => ({
-            ...prev,
-            points: parseInt(e.target.value) || 1,
-          }))
-        }
-        label="Points"
-        sx={{ width: 200 }}
-      />
-
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
         <Button variant="outlined" onClick={onCancel}>
           Cancel

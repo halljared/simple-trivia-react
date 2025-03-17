@@ -3,64 +3,38 @@ import { useNavigate } from '@tanstack/react-router';
 import { TriviaEvent, TriviaRound } from '../types/trivia';
 import RoundList from '../components/RoundList';
 import { Box, Typography, TextField, Paper } from '@mui/material';
+import { useEventStore } from '../stores/eventStore';
 
 export default function EventConfig() {
   const navigate = useNavigate();
-  const [event, setEvent] = useState<TriviaEvent>({
-    id: crypto.randomUUID(),
-    name: '',
-    date: new Date(),
-    host: '',
-    rounds: [],
-    status: 'upcoming',
-  });
+  const { currentEvent, setEvent, updateRound, deleteRound } = useEventStore();
 
-  // Load event from localStorage if it exists
+  // Initialize event if none exists
   useEffect(() => {
-    const storedEvent = localStorage.getItem(`event-${event.id}`);
-    if (storedEvent) {
-      setEvent(JSON.parse(storedEvent));
-    }
-  }, []);
+    if (!currentEvent) {
+      const newEvent: TriviaEvent = {
+        id: crypto.randomUUID(),
+        name: '',
+        date: new Date(),
+        host: '',
+        rounds: [],
+        status: 'upcoming',
+      };
 
-  // Save event to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem(`event-${event.id}`, JSON.stringify(event));
-  }, [event]);
-
-  const updateRound = (updatedRound: TriviaRound) => {
-    setEvent((prev) => {
-      const existingRoundIndex = prev.rounds.findIndex(
-        (r) => r.id === updatedRound.id
-      );
-      if (existingRoundIndex === -1) {
-        // Add new round
-        return {
-          ...prev,
-          rounds: [...prev.rounds, updatedRound],
-        };
+      const storedEvent = localStorage.getItem(`event-${newEvent.id}`);
+      if (storedEvent) {
+        setEvent(JSON.parse(storedEvent));
       } else {
-        // Update existing round
-        return {
-          ...prev,
-          rounds: prev.rounds.map((r) =>
-            r.id === updatedRound.id ? updatedRound : r
-          ),
-        };
+        setEvent(newEvent);
       }
-    });
-  };
+    }
+  }, [currentEvent, setEvent]);
 
-  const deleteRound = (roundId: string) => {
-    setEvent((prev) => ({
-      ...prev,
-      rounds: prev.rounds.filter((r) => r.id !== roundId),
-    }));
-  };
+  if (!currentEvent) return null;
 
   const handleEditRound = (roundId: string) => {
     navigate({
-      to: `/events/${event.id}/rounds/${roundId}`,
+      to: `/events/${currentEvent.id}/rounds/${roundId}`,
     });
   };
 
@@ -73,10 +47,8 @@ export default function EventConfig() {
         </Typography>
         <TextField
           fullWidth
-          value={event.name}
-          onChange={(e) =>
-            setEvent((prev) => ({ ...prev, name: e.target.value }))
-          }
+          value={currentEvent.name}
+          onChange={(e) => setEvent({ ...currentEvent, name: e.target.value })}
           label="Event Name"
           sx={{ mb: 2 }}
         />
@@ -84,7 +56,7 @@ export default function EventConfig() {
       </Paper>
 
       <RoundList
-        event={event}
+        event={currentEvent}
         onEditRound={handleEditRound}
         onUpdateRound={updateRound}
         onDeleteRound={deleteRound}
