@@ -1,29 +1,38 @@
 import { useNavigate } from '@tanstack/react-router';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { TriviaRound } from '../types/trivia';
 import QuestionList from '../components/QuestionList';
 import { questionEditorRoute, createQuizRoute } from '../App';
 import { useEventStore } from '../stores/eventStore';
+import { useCategories } from '../hooks/useCategories';
+import { useQuestionOperations } from '../hooks/useQuestionOperations';
 
 export default function QuestionEditor() {
   const navigate = useNavigate();
   const { eventId, roundId } = questionEditorRoute.useParams();
-  const [round, setRound] = useState<TriviaRound | null>(null);
   const { currentEvent, updateRound, loadEvent } = useEventStore();
+  const { categories, isLoading: isLoadingCategories } = useCategories();
 
   useEffect(() => {
     // If we don't have the event in the store, get it from localStorage
     if (!currentEvent) {
       loadEvent(eventId);
     }
+  }, [eventId, currentEvent, loadEvent]);
 
-    // Set the round from the store
-    const event = currentEvent;
-    const foundRound = event?.rounds?.find(
-      (r: TriviaRound) => r.id === roundId
-    );
-    setRound(foundRound || null);
-  }, [eventId, roundId, currentEvent, loadEvent]);
+  // Find the round from the store
+  const round = currentEvent?.rounds?.find(
+    (r: TriviaRound) => r.id === roundId
+  );
+
+  const {
+    editedRound,
+    isLoading: isLoadingQuestions,
+    handleAddQuestions,
+    handleUpdateQuestion,
+    handleDeleteQuestion,
+    handleCategoryChange,
+  } = useQuestionOperations(round || { id: '', name: '', questions: [] });
 
   const handleSave = (updatedRound: TriviaRound) => {
     updateRound(updatedRound);
@@ -37,9 +46,16 @@ export default function QuestionEditor() {
   return (
     <QuestionList
       event={currentEvent}
-      round={round}
-      onSave={handleSave}
+      round={editedRound}
+      categories={categories}
+      onSave={() => handleSave(editedRound)}
       onBack={() => navigate({ to: createQuizRoute.id })}
+      onUpdateQuestion={handleUpdateQuestion}
+      onDeleteQuestion={handleDeleteQuestion}
+      onAddQuestions={handleAddQuestions}
+      onCategoryChange={handleCategoryChange}
+      isLoading={isLoadingQuestions}
+      isLoadingCategories={isLoadingCategories}
     />
   );
 }
