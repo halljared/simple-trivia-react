@@ -58,3 +58,12 @@ export interface Question {
   difficulty: QuestionDifficulty;
   // ... other question properties
 }
+
+export enum TriviaCategoryNames {
+  ARTS = 'ARTS',
+  ENTERTAINMENT = 'ENTERTAINMENT',
+  GENERAL = 'GENERAL',
+  GEOGRAPHY = 'GEOGRAPHY',
+  HISTORY = 'HISTORY',
+  SCIENCE = 'SCIENCE',
+}

@@ -15,10 +15,10 @@ import {
   FormControl,
   Autocomplete,
   Breadcrumbs,
+  CircularProgress,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 interface QuestionListProps {
@@ -39,6 +39,7 @@ export default function QuestionList({
     null
   );
   const [questionCount, setQuestionCount] = useState<number>(10);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { categories, fetchCategories, fetchQuestionsForCategory } =
     useTriviaStore();
@@ -47,47 +48,23 @@ export default function QuestionList({
     fetchCategories();
   }, [fetchCategories]);
 
-  const initializeEmptyQuestions = (count: number) => {
-    const emptyQuestions: TriviaQuestion[] = Array(count)
-      .fill(null)
-      .map(() => ({
-        id: crypto.randomUUID(),
-        questionText: '',
-        answerText: '',
-        type: 'open-ended',
-        difficulty: 'medium',
-      }));
-
-    setEditedRound((prev) => ({
-      ...prev,
-      questions: emptyQuestions,
-    }));
-  };
-
-  const fillQuestionsFromAPI = async () => {
+  const initializeEmptyQuestions = async (count: number) => {
     if (!editedRound.categoryId) return;
-
+    setIsLoading(true);
     const apiQuestions = await fetchQuestionsForCategory(
       editedRound.categoryId,
-      editedRound.questions.length
+      count
     );
-
     setEditedRound((prev) => ({
       ...prev,
-      questions: prev.questions.map((q, index) => {
-        if (q.questionText) return q;
-        const apiQ = apiQuestions[index];
-        if (!apiQ) return q;
-
-        return {
+      questions: prev.questions.concat(
+        apiQuestions.map((q) => ({
           ...q,
-          questionText: apiQ.questionText,
-          answerText: apiQ.answerText,
-          type: apiQ.type || q.type,
-          difficulty: apiQ.difficulty || q.difficulty,
-        };
-      }),
+          id: crypto.randomUUID(),
+        }))
+      ),
     }));
+    setIsLoading(false);
   };
 
   const updateQuestion = (updatedQuestion: TriviaQuestion) => {
@@ -184,70 +161,78 @@ export default function QuestionList({
               <Button
                 variant="outlined"
                 onClick={() => initializeEmptyQuestions(questionCount)}
+                disabled={!editedRound.categoryId}
               >
-                Initialize Questions
+                Create Questions
               </Button>
-              {editedRound.categoryId && (
-                <Button
-                  variant="contained"
-                  startIcon={<AutorenewIcon />}
-                  onClick={fillQuestionsFromAPI}
-                >
-                  Fill Empty Questions from API
-                </Button>
-              )}
             </Box>
           </Stack>
         </CardContent>
       </Card>
 
       <Stack spacing={2}>
-        {editedRound.questions.map((question, index) => (
-          <Card key={question.id}>
-            <CardContent>
-              {editingQuestionId === question.id ? (
-                <QuestionEditor
-                  question={question}
-                  onSave={updateQuestion}
-                  onCancel={() => setEditingQuestionId(null)}
-                />
-              ) : (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                  }}
-                >
-                  <Box sx={{ flex: 1 }}>
-                    <Typography
-                      variant="subtitle2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      Question {index + 1}
-                    </Typography>
-                    <QuestionItem question={question} />
+        {isLoading ? (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <CircularProgress size={24} />
+            <Typography color="text.secondary" sx={{ mt: 2 }}>
+              Loading questions...
+            </Typography>
+          </Box>
+        ) : editedRound.questions.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography color="text.secondary">
+              No questions added yet. Select a category and create some
+              questions to get started.
+            </Typography>
+          </Box>
+        ) : (
+          editedRound.questions.map((question, index) => (
+            <Card key={question.id}>
+              <CardContent>
+                {editingQuestionId === question.id ? (
+                  <QuestionEditor
+                    question={question}
+                    onSave={updateQuestion}
+                    onCancel={() => setEditingQuestionId(null)}
+                  />
+                ) : (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                    }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography
+                        variant="subtitle2"
+                        color="text.secondary"
+                        sx={{ mb: 1 }}
+                      >
+                        Question {index + 1}
+                      </Typography>
+                      <QuestionItem question={question} />
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                      <IconButton
+                        onClick={() => setEditingQuestionId(question.id)}
+                        color="primary"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => deleteQuestion(question.id)}
+                        color="error"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                    <IconButton
-                      onClick={() => setEditingQuestionId(question.id)}
-                      color="primary"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      onClick={() => deleteQuestion(question.id)}
-                      color="error"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+                )}
+              </CardContent>
+            </Card>
+          ))
+        )}
       </Stack>
     </Stack>
   );
