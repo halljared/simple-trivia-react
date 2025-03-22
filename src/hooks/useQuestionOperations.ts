@@ -17,12 +17,10 @@ export function useQuestionOperations(round: TriviaRound) {
       );
       setEditedRound((prev) => ({
         ...prev,
-        questions: prev.questions.concat(
-          apiQuestions.map((q) => ({
-            ...q,
-            id: crypto.randomUUID(),
-          }))
-        ),
+        questions: apiQuestions.map((q) => ({
+          ...q,
+          id: crypto.randomUUID(),
+        })),
       }));
     } finally {
       setIsLoading(false);
