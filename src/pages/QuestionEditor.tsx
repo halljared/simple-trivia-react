@@ -1,61 +1,42 @@
+// QuestionEditor.tsx
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import { TriviaRound } from '../types/trivia';
 import QuestionList from '../components/QuestionList';
 import { questionEditorRoute, createQuizRoute } from '../App';
-import { useEventStore } from '../stores/eventStore';
-import { useCategories } from '../hooks/useCategories';
-import { useQuestionOperations } from '../hooks/useQuestionOperations';
+import { useTriviaStore } from '../stores/triviaStore';
+import { Breadcrumbs, Typography, Box } from '@mui/material';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 export default function QuestionEditor() {
   const navigate = useNavigate();
   const { eventId, roundId } = questionEditorRoute.useParams();
-  const { currentEvent, updateRound, loadEvent } = useEventStore();
-  const { categories, isLoading: isLoadingCategories } = useCategories();
+  const { currentRound, setCurrentRound, loadEvent, currentEvent } =
+    useTriviaStore();
 
   useEffect(() => {
-    // If we don't have the event in the store, get it from localStorage
-    if (!currentEvent) {
-      loadEvent(eventId);
-    }
-  }, [eventId, currentEvent, loadEvent]);
+    // Load the event if it's not already loaded.
+    loadEvent(eventId);
+    // Set the current round.  This will happen *after* loadEvent is complete.
+    setCurrentRound(roundId);
+  }, [eventId, roundId, loadEvent, setCurrentRound]);
 
-  // Find the round from the store
-  const round = currentEvent?.rounds?.find(
-    (r: TriviaRound) => r.id === roundId
-  );
-
-  const {
-    editedRound,
-    isLoading: isLoadingQuestions,
-    handleAddQuestions,
-    handleUpdateQuestion,
-    handleDeleteQuestion,
-    handleCategoryChange,
-  } = useQuestionOperations(round || { id: '', name: '', questions: [] });
-
-  const handleSave = (updatedRound: TriviaRound) => {
-    updateRound(updatedRound);
-    navigate({ to: createQuizRoute.id });
-  };
-
-  if (!currentEvent || !round) {
-    return <div>Loading...</div>;
+  if (!currentRound) {
+    return <div>Loading...</div>; // currentRound is what we're editing
   }
 
   return (
-    <QuestionList
-      event={currentEvent}
-      round={editedRound}
-      categories={categories}
-      onSave={() => handleSave(editedRound)}
-      onBack={() => navigate({ to: createQuizRoute.id })}
-      onUpdateQuestion={handleUpdateQuestion}
-      onDeleteQuestion={handleDeleteQuestion}
-      onAddQuestions={handleAddQuestions}
-      onCategoryChange={handleCategoryChange}
-      isLoading={isLoadingQuestions}
-      isLoadingCategories={isLoadingCategories}
-    />
+    <>
+      <Box>
+        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
+          <Typography color="text.secondary">{currentEvent?.name}</Typography>
+          <Typography color="text.secondary">{currentRound.name}</Typography>
+          <Typography color="text.primary">Questions</Typography>
+        </Breadcrumbs>
+      </Box>
+      <QuestionList
+        onSave={() => navigate({ to: createQuizRoute.id })}
+        onBack={() => navigate({ to: createQuizRoute.id })}
+      />
+    </>
   );
 }

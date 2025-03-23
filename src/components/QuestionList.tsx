@@ -1,10 +1,4 @@
 import { useState } from 'react';
-import {
-  TriviaRound,
-  TriviaQuestion,
-  TriviaEvent,
-  TriviaCategory,
-} from '../types/trivia';
 import { QuestionItem } from './QuestionItem';
 import {
   Box,
@@ -16,50 +10,41 @@ import {
   Stack,
   FormControl,
   Autocomplete,
-  Breadcrumbs,
   CircularProgress,
 } from '@mui/material';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import { useCategories } from '../hooks/useCategories';
+import { useTriviaStore } from '../stores/triviaStore';
 
 interface QuestionListProps {
-  event: TriviaEvent;
-  round: TriviaRound;
-  categories: TriviaCategory[];
-  onSave: (round: TriviaRound) => void;
+  onSave: () => void; // Simplified: No need to pass round back
   onBack: () => void;
-  onUpdateQuestion: (question: TriviaQuestion) => void;
-  onDeleteQuestion: (questionId: string) => void;
-  onAddQuestions: (count: number) => Promise<void>;
-  onCategoryChange: (categoryId: number | undefined) => void;
-  isLoading: boolean;
-  isLoadingCategories: boolean;
 }
 
-export default function QuestionList({
-  event,
-  round,
-  categories,
-  onSave,
-  onBack,
-  onUpdateQuestion,
-  onDeleteQuestion,
-  onAddQuestions,
-  onCategoryChange,
-  isLoading,
-  isLoadingCategories,
-}: QuestionListProps) {
+export default function QuestionList({ onSave, onBack }: QuestionListProps) {
   const [questionCount, setQuestionCount] = useState<number>(10);
+  const { categories, isLoading: isLoadingCategories } = useCategories();
+  const {
+    currentRound,
+    isLoading,
+    addQuestions,
+    updateQuestion,
+    deleteQuestion,
+    setCategoryId,
+  } = useTriviaStore();
+
+  // VERY IMPORTANT: Guard against null currentRound.  This can happen
+  // while the event/round is loading.
+  if (!currentRound) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 4 }}>
+        <CircularProgress />
+        <Typography>Loading round...</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Stack spacing={3}>
-      <Box>
-        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />}>
-          <Typography color="text.secondary">{event.name}</Typography>
-          <Typography color="text.secondary">{round.name}</Typography>
-          <Typography color="text.primary">Questions</Typography>
-        </Breadcrumbs>
-      </Box>
-
       <Box
         sx={{
           display: 'flex',
@@ -72,7 +57,9 @@ export default function QuestionList({
           <Button variant="outlined" onClick={onBack}>
             Cancel
           </Button>
-          <Button variant="contained" onClick={() => onSave(round)}>
+          <Button variant="contained" onClick={onSave}>
+            {' '}
+            {/* Simplified save */}
             Save Questions
           </Button>
         </Box>
@@ -85,10 +72,12 @@ export default function QuestionList({
               <Autocomplete
                 loading={isLoadingCategories}
                 value={
-                  categories?.find((cat) => cat.id === round.categoryId) || null
+                  categories?.find(
+                    (cat) => cat.id === currentRound.categoryId
+                  ) || null
                 }
                 onChange={(_, newValue) => {
-                  onCategoryChange(newValue?.id);
+                  setCategoryId(newValue?.id);
                 }}
                 options={
                   categories?.sort(
@@ -125,8 +114,8 @@ export default function QuestionList({
               />
               <Button
                 variant="outlined"
-                onClick={() => onAddQuestions(questionCount)}
-                disabled={!round.categoryId}
+                onClick={() => addQuestions(questionCount)}
+                disabled={!currentRound.categoryId}
               >
                 Create Questions
               </Button>
@@ -143,7 +132,7 @@ export default function QuestionList({
               Loading questions...
             </Typography>
           </Box>
-        ) : round.questions.length === 0 ? (
+        ) : currentRound.questions.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography color="text.secondary">
               No questions added yet. Select a category and create some
@@ -151,13 +140,13 @@ export default function QuestionList({
             </Typography>
           </Box>
         ) : (
-          round.questions.map((question, index) => (
+          currentRound.questions.map((question, index) => (
             <QuestionItem
               key={question.id}
               question={question}
               index={index}
-              onUpdate={onUpdateQuestion}
-              onDelete={onDeleteQuestion}
+              onUpdate={updateQuestion}
+              onDelete={deleteQuestion}
             />
           ))
         )}

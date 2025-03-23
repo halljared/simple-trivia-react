@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TriviaRound, TriviaEvent } from '../types/trivia';
+import { TriviaRound } from '../types/trivia';
 import {
   Box,
   Typography,
@@ -17,14 +17,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import QuizIcon from '@mui/icons-material/Quiz';
 
 interface RoundListProps {
-  event: TriviaEvent;
+  rounds: TriviaRound[];
   onEditRound: (roundId: string) => void;
   onUpdateRound: (round: TriviaRound) => void;
   onDeleteRound: (roundId: string) => void;
 }
 
 export default function RoundList({
-  event,
+  rounds,
   onEditRound,
   onUpdateRound,
   onDeleteRound,
@@ -70,8 +70,7 @@ export default function RoundList({
       </Box>
 
       <Stack spacing={2}>
-        {event.rounds.map((round) => {
-          console.log('Round questions:', round.questions);
+        {rounds.map((round) => {
           return (
             <Card key={round.id}>
               <CardContent>

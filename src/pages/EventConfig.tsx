@@ -3,11 +3,11 @@ import { useNavigate } from '@tanstack/react-router';
 import { TriviaEvent } from '../types/trivia';
 import RoundList from '../components/RoundList';
 import { Box, Typography, TextField, Paper } from '@mui/material';
-import { useEventStore } from '../stores/eventStore';
+import { useTriviaStore } from '../stores/triviaStore';
 
 export default function EventConfig() {
   const navigate = useNavigate();
-  const { currentEvent, setEvent, updateRound, deleteRound } = useEventStore();
+  const { currentEvent, setEvent, updateRound, deleteRound } = useTriviaStore();
 
   // Initialize event if none exists
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function EventConfig() {
       </Paper>
 
       <RoundList
-        event={currentEvent}
+        rounds={currentEvent.rounds}
         onEditRound={handleEditRound}
         onUpdateRound={updateRound}
         onDeleteRound={deleteRound}
