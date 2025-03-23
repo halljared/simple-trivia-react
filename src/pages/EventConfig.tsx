@@ -7,7 +7,8 @@ import { useTriviaStore } from '../stores/triviaStore';
 
 export default function EventConfig() {
   const navigate = useNavigate();
-  const { currentEvent, setEvent, updateRound, deleteRound } = useTriviaStore();
+  const { currentEvent, setEvent, updateRound, deleteRound, addRound } =
+    useTriviaStore();
 
   // Initialize event if none exists
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function EventConfig() {
         onEditRound={handleEditRound}
         onUpdateRound={updateRound}
         onDeleteRound={deleteRound}
+        onAddRound={addRound}
       />
     </Box>
   );

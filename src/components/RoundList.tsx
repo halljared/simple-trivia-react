@@ -21,6 +21,7 @@ interface RoundListProps {
   onEditRound: (roundId: string) => void;
   onUpdateRound: (round: TriviaRound) => void;
   onDeleteRound: (roundId: string) => void;
+  onAddRound: () => void;
 }
 
 export default function RoundList({
@@ -28,6 +29,7 @@ export default function RoundList({
   onEditRound,
   onUpdateRound,
   onDeleteRound,
+  onAddRound,
 }: RoundListProps) {
   const [editingRoundId, setEditingRoundId] = useState<string | null>(null);
   const [editedRoundName, setEditedRoundName] = useState<string>('');
@@ -55,16 +57,7 @@ export default function RoundList({
         }}
       >
         <Typography variant="h5">Rounds</Typography>
-        <Button
-          variant="contained"
-          onClick={() =>
-            onUpdateRound({
-              id: crypto.randomUUID(),
-              name: 'New Round',
-              questions: [],
-            })
-          }
-        >
+        <Button variant="contained" onClick={onAddRound}>
           Add Round
         </Button>
       </Box>

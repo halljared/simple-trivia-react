@@ -73,6 +73,29 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     // No return value needed
   },
 
+  addRound: () =>
+    set((state) => {
+      if (!state.currentEvent) return state;
+
+      const newRound = {
+        id: crypto.randomUUID(),
+        name: 'New Round',
+        questions: [],
+      };
+
+      const updatedEvent = {
+        ...state.currentEvent,
+        rounds: [...state.currentEvent.rounds, newRound],
+      };
+
+      localStorage.setItem(
+        `event-${updatedEvent.id}`,
+        JSON.stringify(updatedEvent)
+      );
+
+      return { currentEvent: updatedEvent };
+    }),
+
   updateRound: (updatedRound) =>
     set((state) => {
       if (!state.currentEvent) return state;
