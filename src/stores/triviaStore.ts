@@ -22,6 +22,7 @@ interface TriviaStore {
   loadEvent: (eventId: string) => void; // Changed return type
   fetchCategories: () => Promise<void>;
   setCurrentRound: (roundId: string | null) => void; // Accepts roundId, can unset
+  addRound: () => void;
   addQuestions: (count: number) => Promise<void>;
   updateQuestion: (question: TriviaQuestion) => void;
   deleteQuestion: (questionId: string) => void;
