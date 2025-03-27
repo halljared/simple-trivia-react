@@ -13,19 +13,31 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import SettingsIcon from '@mui/icons-material/Settings';
+import LoginIcon from '@mui/icons-material/Login';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface SidebarProps {
   isOpen: boolean;
 }
 
 export default function Sidebar({ isOpen }: SidebarProps) {
-  const navItems = [
+  const { isAuthenticated } = useAuth();
+
+  const authenticatedNavItems = [
     { icon: HomeIcon, label: 'Dashboard', path: '/' },
     { icon: AddCircleIcon, label: 'Create Event', path: '/create' },
-    { icon: PlayCircleIcon, label: 'Host Game', path: '/host' },
     { icon: LibraryBooksIcon, label: 'My Events', path: '/events' },
+    { icon: PlayCircleIcon, label: 'Host Game', path: '/host' },
     { icon: SettingsIcon, label: 'Settings', path: '/settings' },
   ];
+
+  const unauthenticatedNavItems = [
+    { icon: LoginIcon, label: 'Login', path: '/login' },
+  ];
+
+  const navItems = isAuthenticated
+    ? authenticatedNavItems
+    : unauthenticatedNavItems;
 
   const drawerWidth = 256;
   const transition = '225ms cubic-bezier(0.4, 0, 0.6, 1) 0ms';

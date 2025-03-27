@@ -5,10 +5,12 @@ import {
   createRouter,
 } from '@tanstack/react-router';
 import MainLayout from '@/components/layout/MainLayout';
-import Dashboard from '@/pages/Dashboard';
+import Home from '@/pages/Home';
 import EventConfig from '@/pages/EventConfig';
 import QuestionEditor from '@/pages/QuestionEditor';
 import { Box, Typography, Button } from '@mui/material';
+import Dashboard from '@/pages/Dashboard';
+import { AuthProvider } from './contexts/AuthContext';
 
 function NotFound() {
   return (
@@ -48,6 +50,11 @@ const rootRoute = createRootRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
+  component: Home,
+});
+const dashboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/dashboard',
   component: Dashboard,
 });
 
@@ -92,6 +99,7 @@ export { questionEditorRoute, createQuizRoute };
 // Create the route tree
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  dashboardRoute,
   createQuizRoute,
   hostRoute,
   quizzesRoute,
@@ -114,7 +122,11 @@ declare module '@tanstack/react-router' {
 }
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
 export default App;
