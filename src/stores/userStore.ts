@@ -1,33 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  created_at?: string;
-  last_login?: string;
-}
-
-interface AuthState {
-  user: User | null;
-  sessionToken: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (
-    username: string,
-    email: string,
-    password: string
-  ) => Promise<void>;
-  logout: () => Promise<void>;
-  fetchUser: () => Promise<void>;
-}
+import { AuthStoreState } from '../types/auth';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-export const useAuthStore = create<AuthState>()(
+export const useAuthStore = create<AuthStoreState>()(
   persist(
     (set, get) => ({
       user: null,
