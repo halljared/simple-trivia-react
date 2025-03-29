@@ -10,7 +10,7 @@ import EventConfig from '@/pages/EventConfig';
 import QuestionEditor from '@/pages/QuestionEditor';
 import { Box, Typography, Button } from '@mui/material';
 import Dashboard from '@/pages/Dashboard';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from '@/providers/AuthProvider';
 
 function NotFound() {
   return (
