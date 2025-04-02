@@ -3,13 +3,18 @@ import { persist } from 'zustand/middleware';
 import { AuthStoreState } from '../types/auth';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const DEV_MODE = import.meta.env.MODE === 'development';
+const BYPASS_AUTH = import.meta.env.VITE_BYPASS_AUTH === 'true';
+
+console.log('DEV_MODE', DEV_MODE);
+console.log('BYPASS_AUTH', BYPASS_AUTH);
 
 export const useAuthStore = create<AuthStoreState>()(
   persist(
     (set, get) => ({
       user: null,
       sessionToken: null,
-      isAuthenticated: false,
+      isAuthenticated: DEV_MODE && BYPASS_AUTH ? true : false,
       isLoading: false,
       error: null,
 
