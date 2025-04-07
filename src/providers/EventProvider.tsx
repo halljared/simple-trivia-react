@@ -1,17 +1,22 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { TriviaEvent } from '../types/trivia';
 import { EventContext } from '../contexts/EventContext';
-
+import { useTriviaStore } from '../stores/triviaStore';
+import { useParams } from '@tanstack/react-router';
 interface EventProviderProps {
   children: ReactNode;
 }
 
 export function EventProvider({ children }: EventProviderProps) {
-  const [currentEvent, setCurrentEvent] = useState<TriviaEvent | null>(null);
+  const [event, setEvent] = useState<TriviaEvent | null>(null);
+  const { setEvent: saveEvent, loadEvent } = useTriviaStore();
 
+  const { eventId } = useParams({ strict: false });
   // Initialize event if none exists
   useEffect(() => {
-    if (!currentEvent) {
+    if (eventId) {
+      loadEvent(eventId);
+    } else {
       const newEvent: TriviaEvent = {
         id: crypto.randomUUID(),
         name: '',
@@ -20,13 +25,19 @@ export function EventProvider({ children }: EventProviderProps) {
         rounds: [],
         status: 'upcoming',
       };
-      setCurrentEvent(newEvent);
+      setEvent(newEvent);
     }
-  }, [currentEvent]);
+  }, [loadEvent, eventId]);
+
+  const _saveEvent = (event: TriviaEvent) => {
+    setEvent(event);
+    saveEvent(event);
+  };
 
   const value = {
-    currentEvent,
-    setCurrentEvent,
+    event,
+    setEvent: setEvent,
+    saveEvent: _saveEvent,
   };
 
   return (

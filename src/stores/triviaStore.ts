@@ -14,9 +14,11 @@ interface TriviaStore {
   categories: TriviaCategory[];
   currentRound: TriviaRound | null; // Make currentRound nullable
   isLoading: boolean;
+  events: TriviaEvent[];
 
   // Actions
   setEvent: (event: TriviaEvent) => void;
+  loadEvents: () => TriviaEvent[];
   updateRound: (round: TriviaRound) => void;
   deleteRound: (roundId: string) => void;
   loadEvent: (eventId: string) => void; // Changed return type
@@ -38,6 +40,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
   categories: [],
   currentRound: null, // Initialize as null
   isLoading: false,
+  events: [],
 
   fetchCategories: async () => {
     try {
@@ -61,6 +64,14 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
 
   setEvent: (event) => {
     set({ currentEvent: event });
+    let events = get().loadEvents();
+
+    if (!events.find((e) => e.id === event.id)) {
+      events.push(event);
+    } else {
+      events = events.map((e) => (e.id === event.id ? event : e));
+    }
+    localStorage.setItem('events', JSON.stringify(events));
     localStorage.setItem(`event-${event.id}`, JSON.stringify(event));
   },
 
@@ -69,9 +80,19 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     if (storedEvent) {
       const parsedEvent = JSON.parse(storedEvent);
       set({ currentEvent: parsedEvent });
-      // Don't return here; let setCurrentRound handle setting the round.
+      return parsedEvent;
     }
-    // No return value needed
+    return null;
+  },
+
+  loadEvents: () => {
+    const storedEvents = localStorage.getItem('events');
+    if (storedEvents) {
+      const parsedEvents = JSON.parse(storedEvents);
+      set({ events: parsedEvents });
+      return parsedEvents;
+    }
+    return [];
   },
 
   addRound: () =>

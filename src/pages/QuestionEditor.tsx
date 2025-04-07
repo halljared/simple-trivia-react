@@ -2,7 +2,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import QuestionList from '../components/QuestionList';
-import { questionEditorRoute, createQuizRoute } from '../App';
+import { questionEditorRoute, createQuizRoute } from '../config/routes';
 import { useTriviaStore } from '../stores/triviaStore';
 import { Breadcrumbs, Typography, Box } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';

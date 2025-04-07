@@ -10,18 +10,14 @@ import {
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import PlayCircleIcon from '@mui/icons-material/PlayCircle';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import SettingsIcon from '@mui/icons-material/Settings';
 import LoginIcon from '@mui/icons-material/Login';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   dashboardRoute,
   createQuizRoute,
-  eventLayoutRoute,
-  hostRoute,
-  settingsRoute,
-} from '../../App';
+  eventListRoute,
+} from '../../config/routes';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -37,9 +33,11 @@ export default function Sidebar({ isOpen }: SidebarProps) {
       label: 'Create Event',
       path: createQuizRoute.fullPath,
     },
-    { icon: LibraryBooksIcon, label: 'My Events', path: eventLayoutRoute.path },
-    { icon: PlayCircleIcon, label: 'Host Game', path: hostRoute.path },
-    { icon: SettingsIcon, label: 'Settings', path: settingsRoute.path },
+    {
+      icon: LibraryBooksIcon,
+      label: 'My Events',
+      path: eventListRoute.fullPath,
+    },
   ];
 
   const unauthenticatedNavItems = [
