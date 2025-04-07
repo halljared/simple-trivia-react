@@ -1,29 +1,13 @@
-import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { TriviaEvent } from '../types/trivia';
 import RoundList from '../components/RoundList';
 import { Box, Typography, TextField, Paper } from '@mui/material';
-import { useTriviaStore } from '../stores/triviaStore';
+import { useEvent } from '@/contexts/EventContext';
+import { useTriviaStore } from '@/stores/triviaStore';
 
 export default function EventConfig() {
   const navigate = useNavigate();
-  const { currentEvent, setEvent, updateRound, deleteRound, addRound } =
-    useTriviaStore();
-
-  // Initialize event if none exists
-  useEffect(() => {
-    if (!currentEvent) {
-      const newEvent: TriviaEvent = {
-        id: crypto.randomUUID(),
-        name: '',
-        date: new Date(),
-        host: '',
-        rounds: [],
-        status: 'upcoming',
-      };
-      setEvent(newEvent);
-    }
-  }, [currentEvent, setEvent]);
+  const { currentEvent, setCurrentEvent } = useEvent();
+  const { updateRound, deleteRound, addRound } = useTriviaStore();
 
   if (!currentEvent) return null;
 
@@ -43,7 +27,9 @@ export default function EventConfig() {
         <TextField
           fullWidth
           value={currentEvent.name}
-          onChange={(e) => setEvent({ ...currentEvent, name: e.target.value })}
+          onChange={(e) =>
+            setCurrentEvent({ ...currentEvent, name: e.target.value })
+          }
           label="Event Name"
           sx={{ mb: 2 }}
         />

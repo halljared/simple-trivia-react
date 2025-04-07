@@ -15,6 +15,13 @@ import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LoginIcon from '@mui/icons-material/Login';
 import { useAuth } from '../../contexts/AuthContext';
+import {
+  dashboardRoute,
+  createQuizRoute,
+  eventLayoutRoute,
+  hostRoute,
+  settingsRoute,
+} from '../../App';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -24,11 +31,15 @@ export default function Sidebar({ isOpen }: SidebarProps) {
   const { isAuthenticated } = useAuth();
 
   const authenticatedNavItems = [
-    { icon: HomeIcon, label: 'Dashboard', path: '/' },
-    { icon: AddCircleIcon, label: 'Create Event', path: '/create' },
-    { icon: LibraryBooksIcon, label: 'My Events', path: '/events' },
-    { icon: PlayCircleIcon, label: 'Host Game', path: '/host' },
-    { icon: SettingsIcon, label: 'Settings', path: '/settings' },
+    { icon: HomeIcon, label: 'Dashboard', path: dashboardRoute.path },
+    {
+      icon: AddCircleIcon,
+      label: 'Create Event',
+      path: createQuizRoute.fullPath,
+    },
+    { icon: LibraryBooksIcon, label: 'My Events', path: eventLayoutRoute.path },
+    { icon: PlayCircleIcon, label: 'Host Game', path: hostRoute.path },
+    { icon: SettingsIcon, label: 'Settings', path: settingsRoute.path },
   ];
 
   const unauthenticatedNavItems = [

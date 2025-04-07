@@ -11,6 +11,7 @@ import QuestionEditor from '@/pages/QuestionEditor';
 import { Box, Typography, Button } from '@mui/material';
 import Dashboard from '@/pages/Dashboard';
 import { AuthProvider } from '@/providers/AuthProvider';
+import EventLayout from '@/components/layout/EventLayout';
 
 function NotFound() {
   return (
@@ -58,8 +59,15 @@ const dashboardRoute = createRoute({
   component: Dashboard,
 });
 
-const createQuizRoute = createRoute({
+// Event layout route
+const eventLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
+  path: '/events',
+  component: EventLayout,
+});
+
+const createQuizRoute = createRoute({
+  getParentRoute: () => eventLayoutRoute,
   path: '/create',
   component: EventConfig,
 });
@@ -94,7 +102,16 @@ const questionEditorRoute = createRoute({
   component: QuestionEditor,
 });
 
-export { questionEditorRoute, createQuizRoute };
+export {
+  indexRoute,
+  dashboardRoute,
+  createQuizRoute,
+  hostRoute,
+  quizzesRoute,
+  settingsRoute,
+  eventLayoutRoute,
+  questionEditorRoute,
+};
 
 // Create the route tree
 const routeTree = rootRoute.addChildren([
@@ -105,6 +122,7 @@ const routeTree = rootRoute.addChildren([
   quizzesRoute,
   settingsRoute,
   questionEditorRoute,
+  eventLayoutRoute.addChildren([createQuizRoute]),
 ]);
 
 // Create the router
