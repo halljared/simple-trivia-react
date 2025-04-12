@@ -5,6 +5,7 @@ export interface NewTriviaEvent {
   rounds: TriviaRound[];
   status: 'upcoming' | 'in-progress' | 'completed';
   totalPoints?: number;
+  description?: string;
 }
 
 export interface TriviaEvent extends NewTriviaEvent {
@@ -73,4 +74,13 @@ export enum TriviaCategoryNames {
   GEOGRAPHY = 'GEOGRAPHY',
   HISTORY = 'HISTORY',
   SCIENCE = 'SCIENCE',
+}
+
+export interface ListEvent {
+  id: number;
+  name: string;
+  event_date: string | null;
+  created_at: string;
+  status: string;
+  rounds_count: number;
 }
