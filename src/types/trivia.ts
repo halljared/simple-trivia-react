@@ -1,5 +1,4 @@
-export interface TriviaEvent {
-  id: string;
+export interface NewTriviaEvent {
   name: string;
   date: Date;
   host: string;
@@ -7,6 +6,14 @@ export interface TriviaEvent {
   status: 'upcoming' | 'in-progress' | 'completed';
   totalPoints?: number;
 }
+
+export interface TriviaEvent extends NewTriviaEvent {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type TriviaEventUnion = NewTriviaEvent | TriviaEvent;
 
 export interface TriviaRound {
   id: string;

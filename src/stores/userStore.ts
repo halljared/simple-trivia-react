@@ -77,17 +77,17 @@ export const useAuthStore = create<AuthStoreState>()(
             },
           });
 
-          if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.error);
-          }
-
           set({
             user: null,
             sessionToken: null,
             isAuthenticated: false,
             isLoading: false,
           });
+
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error);
+          }
         } catch (error) {
           set({ error: (error as Error).message, isLoading: false });
           throw error;

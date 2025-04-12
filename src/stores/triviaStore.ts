@@ -6,19 +6,22 @@ import {
   TriviaQuestion,
   TriviaQuestionAPI,
   TriviaRound,
+  TriviaEventUnion,
+  ListEvent,
 } from '../types/trivia';
 import { API_ENDPOINTS } from '../config/api';
+import { useAuthStore } from './userStore';
 
 interface TriviaStore {
   event: TriviaEvent | null;
   categories: TriviaCategory[];
   currentRound: TriviaRound | null; // Make currentRound nullable
   isLoading: boolean;
-  events: TriviaEvent[];
+  events: ListEvent[];
 
   // Actions
-  setEvent: (event: TriviaEvent) => void;
-  loadEvents: () => TriviaEvent[];
+  saveEvent: (event: TriviaEventUnion) => void;
+  loadEvents: () => Promise<void>;
   updateRound: (round: TriviaRound) => void;
   deleteRound: (roundId: string) => void;
   loadEvent: (eventId: string) => TriviaEvent | null;
@@ -62,17 +65,34 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  setEvent: (event) => {
-    set({ event: event });
-    let events = get().loadEvents();
+  saveEvent: async (event) => {
+    try {
+      const response = await fetch(API_ENDPOINTS.events.create, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
+        },
+        body: JSON.stringify({
+          id: 'id' in event ? event.id : undefined,
+          name: event.name,
+          event_date: event.date,
+          description: event.description ?? '', // Use nullish coalescing to handle undefined
+          status: event.status,
+        }),
+      });
 
-    if (!events.find((e) => e.id === event.id)) {
-      events.push(event);
-    } else {
-      events = events.map((e) => (e.id === event.id ? event : e));
+      if (!response.ok) {
+        throw new Error('Failed to save event');
+      }
+
+      const savedEvent = await response.json();
+      set({ event: savedEvent });
+      return savedEvent; // Optionally return the saved event if needed
+    } catch (error) {
+      console.error('Error saving event:', error);
+      throw error;
     }
-    localStorage.setItem('events', JSON.stringify(events));
-    localStorage.setItem(`event-${event.id}`, JSON.stringify(event));
   },
 
   loadEvent: (eventId: string): TriviaEvent | null => {
@@ -85,14 +105,25 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     return null;
   },
 
-  loadEvents: () => {
-    const storedEvents = localStorage.getItem('events');
-    if (storedEvents) {
-      const parsedEvents = JSON.parse(storedEvents);
-      set({ events: parsedEvents });
-      return parsedEvents;
+  loadEvents: async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.events.my, {
+        headers: {
+          Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch events');
+      }
+
+      const events: ListEvent[] = await response.json();
+      set({ events });
+    } catch (error) {
+      console.error('Error loading events:', error);
+      // You might want to set some error state here
+      set({ events: [] });
     }
-    return [];
   },
 
   addRound: () =>

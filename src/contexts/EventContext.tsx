@@ -1,9 +1,9 @@
 import { createContext, useContext } from 'react';
-import { TriviaEvent } from '../types/trivia';
+import { TriviaEventUnion } from '../types/trivia';
 
 interface EventContextValue {
-  event: TriviaEvent | null;
-  setEvent: (event: TriviaEvent | null) => void;
+  event: TriviaEventUnion | null;
+  setEvent: React.Dispatch<React.SetStateAction<TriviaEventUnion | null>>;
   addRound: () => void;
 }
 

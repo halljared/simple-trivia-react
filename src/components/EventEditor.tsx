@@ -1,35 +1,28 @@
 import { useNavigate } from '@tanstack/react-router';
 import RoundList from '../components/RoundList';
-import { Box, Typography, TextField, Paper } from '@mui/material';
+import { Box, Typography, TextField, Paper, Button } from '@mui/material';
 import { useEvent } from '@/contexts/EventContext';
 import { useTriviaStore } from '@/stores/triviaStore';
-import { useEffect } from 'react';
 
 export default function EventEditor() {
   const navigate = useNavigate();
-  const { event, setEvent } = useEvent();
-  const {
-    updateRound,
-    deleteRound,
-    addRound,
-    setEvent: saveEvent,
-  } = useTriviaStore();
-
-  useEffect(() => {
-    return () => {
-      // TODO: Use a dirty flag instead of checking if the event has a name
-      if (event?.name) {
-        saveEvent(event);
-      }
-    };
-  }, [event, saveEvent]);
+  const { event, setEvent, addRound } = useEvent();
+  const { updateRound, deleteRound, saveEvent } = useTriviaStore();
 
   if (!event) return null;
 
   const handleEditRound = (roundId: string) => {
-    navigate({
-      to: `/events/${event.id}/rounds/${roundId}`,
-    });
+    if ('id' in event) {
+      navigate({
+        to: `/events/${event.id}/rounds/${roundId}`,
+      });
+    }
+  };
+
+  const handleSave = () => {
+    if (event?.name) {
+      saveEvent(event);
+    }
   };
 
   return (
@@ -47,6 +40,14 @@ export default function EventEditor() {
           sx={{ mb: 2 }}
         />
         {/* Add other event fields as needed */}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSave}
+          sx={{ mt: 2 }}
+        >
+          Save Event
+        </Button>
       </Paper>
 
       <RoundList

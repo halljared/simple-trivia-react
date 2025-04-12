@@ -13,6 +13,9 @@ export const API_BASE_URL = getBaseUrl();
 
 // API endpoints
 export const API_ENDPOINTS = {
+  events: {
+    create: `${API_BASE_URL}/api/events`,
+  },
   categories: {
     all: `${API_BASE_URL}/api/categories`,
     active: `${API_BASE_URL}/api/categories/active`,
