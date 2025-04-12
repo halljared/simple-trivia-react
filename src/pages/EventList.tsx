@@ -14,7 +14,7 @@ import { useEffect } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
-import { TriviaEvent } from '@/types/trivia';
+import { ListEvent } from '@/types/trivia';
 import { editQuizRoute } from '@/config/routes';
 export default function EventList() {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function EventList() {
     loadEvents();
   }, [loadEvents]);
 
-  const handleEdit = (event: TriviaEvent) => {
+  const handleEdit = (event: ListEvent) => {
     navigate({ to: editQuizRoute.id, params: { eventId: event.id } });
   };
 
@@ -47,7 +47,6 @@ export default function EventList() {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell>Date</TableCell>
-              <TableCell>Host</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -57,9 +56,8 @@ export default function EventList() {
               <TableRow key={event.id}>
                 <TableCell>{event.name}</TableCell>
                 <TableCell>
-                  {new Date(event.date).toLocaleDateString()}
+                  {new Date(event.event_date).toLocaleDateString()}
                 </TableCell>
-                <TableCell>{event.host}</TableCell>
                 <TableCell>{event.status}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleEdit(event)} color="primary">
