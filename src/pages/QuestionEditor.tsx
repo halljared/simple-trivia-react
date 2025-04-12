@@ -10,8 +10,12 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 export default function QuestionEditor() {
   const navigate = useNavigate();
   const { eventId, roundId } = questionEditorRoute.useParams();
-  const { currentRound, setCurrentRound, loadEvent, currentEvent } =
-    useTriviaStore();
+  const {
+    currentRound,
+    setCurrentRound,
+    loadEvent,
+    event: currentEvent,
+  } = useTriviaStore();
 
   useEffect(() => {
     // Load the event if it's not already loaded.

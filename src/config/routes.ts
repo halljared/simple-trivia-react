@@ -1,8 +1,4 @@
-import {
-  createRootRoute,
-  createRoute,
-  useLoaderData,
-} from '@tanstack/react-router';
+import { createRootRoute, createRoute } from '@tanstack/react-router';
 import MainLayout from '@/components/layout/MainLayout';
 import Home from '@/pages/Home';
 import QuestionEditor from '@/pages/QuestionEditor';
@@ -12,8 +8,6 @@ import NotFound from '@/components/NotFound';
 import EventList from '@/pages/EventList';
 import EventCreate from '@/pages/events/EventCreate';
 import EventEdit from '@/pages/events/EventEdit';
-import { useTriviaStore } from '@/stores/triviaStore';
-import { TriviaEvent } from '@/types/trivia';
 
 // Create a root route
 const rootRoute = createRootRoute({

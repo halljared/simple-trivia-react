@@ -6,7 +6,7 @@ import { useTriviaStore } from '@/stores/triviaStore';
 
 export default function EventConfig() {
   const navigate = useNavigate();
-  const { event, saveEvent } = useEvent();
+  const { event, setEvent } = useEvent();
   const { updateRound, deleteRound, addRound } = useTriviaStore();
 
   if (!event) return null;
@@ -27,7 +27,7 @@ export default function EventConfig() {
         <TextField
           fullWidth
           value={event.name}
-          onChange={(e) => saveEvent({ ...event, name: e.target.value })}
+          onChange={(e) => setEvent({ ...event, name: e.target.value })}
           label="Event Name"
           sx={{ mb: 2 }}
         />

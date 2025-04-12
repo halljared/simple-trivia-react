@@ -3,8 +3,8 @@ import { TriviaEvent } from '../types/trivia';
 
 interface EventContextValue {
   event: TriviaEvent | null;
-  setEvent: (event: TriviaEvent) => void;
-  saveEvent: (event: TriviaEvent) => void;
+  setEvent: (event: TriviaEvent | null) => void;
+  addRound: () => void;
 }
 
 export const EventContext = createContext<EventContextValue | undefined>(

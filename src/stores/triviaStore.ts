@@ -10,7 +10,7 @@ import {
 import { API_ENDPOINTS } from '../config/api';
 
 interface TriviaStore {
-  currentEvent: TriviaEvent | null;
+  event: TriviaEvent | null;
   categories: TriviaCategory[];
   currentRound: TriviaRound | null; // Make currentRound nullable
   isLoading: boolean;
@@ -21,7 +21,7 @@ interface TriviaStore {
   loadEvents: () => TriviaEvent[];
   updateRound: (round: TriviaRound) => void;
   deleteRound: (roundId: string) => void;
-  loadEvent: (eventId: string) => void; // Changed return type
+  loadEvent: (eventId: string) => TriviaEvent | null;
   fetchCategories: () => Promise<void>;
   setCurrentRound: (roundId: string | null) => void; // Accepts roundId, can unset
   addRound: () => void;
@@ -36,7 +36,7 @@ interface TriviaStore {
 }
 
 export const useTriviaStore = create<TriviaStore>((set, get) => ({
-  currentEvent: null,
+  event: null,
   categories: [],
   currentRound: null, // Initialize as null
   isLoading: false,
@@ -53,7 +53,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
   },
 
   setCurrentRound: (roundId) => {
-    const event = get().currentEvent;
+    const event = get().event;
     if (event) {
       const round = event.rounds.find((r) => r.id === roundId);
       set({ currentRound: round || null }); // Set to null if not found
@@ -63,7 +63,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
   },
 
   setEvent: (event) => {
-    set({ currentEvent: event });
+    set({ event: event });
     let events = get().loadEvents();
 
     if (!events.find((e) => e.id === event.id)) {
@@ -75,11 +75,11 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     localStorage.setItem(`event-${event.id}`, JSON.stringify(event));
   },
 
-  loadEvent: (eventId: string) => {
+  loadEvent: (eventId: string): TriviaEvent | null => {
     const storedEvent = localStorage.getItem(`event-${eventId}`);
     if (storedEvent) {
       const parsedEvent = JSON.parse(storedEvent);
-      set({ currentEvent: parsedEvent });
+      set({ event: parsedEvent });
       return parsedEvent;
     }
     return null;
@@ -97,7 +97,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
 
   addRound: () =>
     set((state) => {
-      if (!state.currentEvent) return state;
+      if (!state.event) return state;
 
       const newRound = {
         id: crypto.randomUUID(),
@@ -106,8 +106,8 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       };
 
       const updatedEvent = {
-        ...state.currentEvent,
-        rounds: [...state.currentEvent.rounds, newRound],
+        ...state.event,
+        rounds: [...state.event.rounds, newRound],
       };
 
       localStorage.setItem(
@@ -115,16 +115,16 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         JSON.stringify(updatedEvent)
       );
 
-      return { currentEvent: updatedEvent };
+      return { event: updatedEvent };
     }),
 
   updateRound: (updatedRound) =>
     set((state) => {
-      if (!state.currentEvent) return state;
+      if (!state.event) return state;
 
       const updatedEvent = {
-        ...state.currentEvent,
-        rounds: state.currentEvent.rounds.map((r) =>
+        ...state.event,
+        rounds: state.event.rounds.map((r) =>
           r.id === updatedRound.id ? updatedRound : r
         ),
       };
@@ -133,23 +133,23 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         `event-${updatedEvent.id}`,
         JSON.stringify(updatedEvent)
       );
-      return { currentEvent: updatedEvent, currentRound: updatedRound }; // Update currentRound too!
+      return { event: updatedEvent, currentRound: updatedRound }; // Update currentRound too!
     }),
 
   deleteRound: (roundId) =>
     set((state) => {
-      if (!state.currentEvent) return state;
+      if (!state.event) return state;
 
       const updatedEvent = {
-        ...state.currentEvent,
-        rounds: state.currentEvent.rounds.filter((r) => r.id !== roundId),
+        ...state.event,
+        rounds: state.event.rounds.filter((r) => r.id !== roundId),
       };
 
       localStorage.setItem(
         `event-${updatedEvent.id}`,
         JSON.stringify(updatedEvent)
       );
-      return { currentEvent: updatedEvent };
+      return { event: updatedEvent };
     }),
 
   addQuestions: async (count) => {

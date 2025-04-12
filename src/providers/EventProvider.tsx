@@ -9,13 +9,13 @@ interface EventProviderProps {
 
 export function EventProvider({ children }: EventProviderProps) {
   const [event, setEvent] = useState<TriviaEvent | null>(null);
-  const { setEvent: saveEvent, loadEvent } = useTriviaStore();
+  const { loadEvent, addRound } = useTriviaStore();
 
   const { eventId } = useParams({ strict: false });
   // Initialize event if none exists
   useEffect(() => {
     if (eventId) {
-      loadEvent(eventId);
+      setEvent(loadEvent(eventId));
     } else {
       const newEvent: TriviaEvent = {
         id: crypto.randomUUID(),
@@ -27,17 +27,12 @@ export function EventProvider({ children }: EventProviderProps) {
       };
       setEvent(newEvent);
     }
-  }, [loadEvent, eventId]);
-
-  const _saveEvent = (event: TriviaEvent) => {
-    setEvent(event);
-    saveEvent(event);
-  };
+  }, [eventId, loadEvent]);
 
   const value = {
     event,
-    setEvent: setEvent,
-    saveEvent: _saveEvent,
+    setEvent,
+    addRound,
   };
 
   return (

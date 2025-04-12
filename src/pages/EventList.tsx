@@ -11,7 +11,6 @@ import {
 import { useNavigate } from '@tanstack/react-router';
 import { useTriviaStore } from '@/stores/triviaStore';
 import { useEffect } from 'react';
-import { useEvent } from '@/contexts/EventContext';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -20,7 +19,6 @@ import { editQuizRoute } from '@/config/routes';
 export default function EventList() {
   const navigate = useNavigate();
   const { events, loadEvents } = useTriviaStore();
-  const { setEvent } = useEvent();
 
   // Load events when component mounts
   useEffect(() => {
@@ -28,7 +26,6 @@ export default function EventList() {
   }, [loadEvents]);
 
   const handleEdit = (event: TriviaEvent) => {
-    setEvent(event);
     navigate({ to: editQuizRoute.id, params: { eventId: event.id } });
   };
 

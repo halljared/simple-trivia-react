@@ -3,11 +3,26 @@ import RoundList from '../components/RoundList';
 import { Box, Typography, TextField, Paper } from '@mui/material';
 import { useEvent } from '@/contexts/EventContext';
 import { useTriviaStore } from '@/stores/triviaStore';
+import { useEffect } from 'react';
 
-export default function EventConfig() {
+export default function EventEditor() {
   const navigate = useNavigate();
-  const { event, saveEvent } = useEvent();
-  const { updateRound, deleteRound, addRound } = useTriviaStore();
+  const { event, setEvent } = useEvent();
+  const {
+    updateRound,
+    deleteRound,
+    addRound,
+    setEvent: saveEvent,
+  } = useTriviaStore();
+
+  useEffect(() => {
+    return () => {
+      // TODO: Use a dirty flag instead of checking if the event has a name
+      if (event?.name) {
+        saveEvent(event);
+      }
+    };
+  }, [event, saveEvent]);
 
   if (!event) return null;
 
@@ -27,7 +42,7 @@ export default function EventConfig() {
         <TextField
           fullWidth
           value={event.name}
-          onChange={(e) => saveEvent({ ...event, name: e.target.value })}
+          onChange={(e) => setEvent({ ...event, name: e.target.value })}
           label="Event Name"
           sx={{ mb: 2 }}
         />
