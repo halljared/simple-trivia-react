@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
   events: {
     my: `${API_BASE_URL}/api/events/my`,
     create: `${API_BASE_URL}/api/events`,
+    get: (eventId: string) => `${API_BASE_URL}/api/events/${eventId}`,
   },
   categories: {
     all: `${API_BASE_URL}/api/categories`,

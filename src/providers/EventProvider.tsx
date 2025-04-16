@@ -12,10 +12,13 @@ export function EventProvider({ children }: EventProviderProps) {
   const { loadEvent } = useTriviaStore();
 
   const { eventId } = useParams({ strict: false });
+
   // Initialize event if none exists
   useEffect(() => {
     if (eventId) {
-      setEvent(loadEvent(eventId));
+      loadEvent(eventId).then((event) => {
+        setEvent(event);
+      });
     } else {
       const newEvent: NewTriviaEvent = {
         name: '',

@@ -1,13 +1,37 @@
 import { useNavigate } from '@tanstack/react-router';
 import RoundList from '../components/RoundList';
-import { Box, Typography, TextField, Paper, Button } from '@mui/material';
+import {
+  Box,
+  Typography,
+  TextField,
+  Paper,
+  Button,
+  CircularProgress,
+} from '@mui/material';
 import { useEvent } from '@/contexts/EventContext';
 import { useTriviaStore } from '@/stores/triviaStore';
 
 export default function EventEditor() {
   const navigate = useNavigate();
   const { event, setEvent, addRound } = useEvent();
-  const { updateRound, deleteRound, saveEvent } = useTriviaStore();
+  const { updateRound, deleteRound, saveEvent, isLoadingEvent } =
+    useTriviaStore();
+
+  if (isLoadingEvent) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <CircularProgress size={100} />
+      </Box>
+    );
+  }
 
   if (!event) return null;
 

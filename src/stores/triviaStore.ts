@@ -17,6 +17,7 @@ interface TriviaStore {
   categories: TriviaCategory[];
   currentRound: TriviaRound | null; // Make currentRound nullable
   isLoading: boolean;
+  isLoadingEvent: boolean;
   events: ListEvent[];
 
   // Actions
@@ -24,7 +25,7 @@ interface TriviaStore {
   loadEvents: () => Promise<void>;
   updateRound: (round: TriviaRound) => void;
   deleteRound: (roundId: string) => void;
-  loadEvent: (eventId: string) => TriviaEvent | null;
+  loadEvent: (eventId: string) => Promise<TriviaEvent | null>;
   fetchCategories: () => Promise<void>;
   setCurrentRound: (roundId: string | null) => void; // Accepts roundId, can unset
   addRound: () => void;
@@ -43,6 +44,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
   categories: [],
   currentRound: null, // Initialize as null
   isLoading: false,
+  isLoadingEvent: false,
   events: [],
 
   fetchCategories: async () => {
@@ -66,6 +68,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
   },
 
   saveEvent: async (event) => {
+    set({ isLoadingEvent: true });
     try {
       const response = await fetch(API_ENDPOINTS.events.create, {
         method: 'POST',
@@ -87,22 +90,36 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       }
 
       const savedEvent = await response.json();
-      set({ event: savedEvent });
+      set({ event: savedEvent, isLoadingEvent: false });
       return savedEvent; // Optionally return the saved event if needed
     } catch (error) {
       console.error('Error saving event:', error);
+      set({ isLoadingEvent: false });
       throw error;
     }
   },
 
-  loadEvent: (eventId: string): TriviaEvent | null => {
-    const storedEvent = localStorage.getItem(`event-${eventId}`);
-    if (storedEvent) {
-      const parsedEvent = JSON.parse(storedEvent);
-      set({ event: parsedEvent });
-      return parsedEvent;
+  loadEvent: async (eventId: string): Promise<TriviaEvent | null> => {
+    set({ isLoadingEvent: true });
+    try {
+      const response = await fetch(API_ENDPOINTS.events.get(eventId), {
+        headers: {
+          Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch event');
+      }
+
+      const event = await response.json();
+      set({ event, isLoadingEvent: false });
+      return event;
+    } catch (error) {
+      console.error('Error loading event:', error);
+      set({ isLoadingEvent: false });
+      return null;
     }
-    return null;
   },
 
   loadEvents: async () => {

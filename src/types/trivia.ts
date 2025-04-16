@@ -77,7 +77,7 @@ export enum TriviaCategoryNames {
 }
 
 export interface ListEvent {
-  id: number;
+  id: string;
   name: string;
   event_date: string | null;
   created_at: string;
