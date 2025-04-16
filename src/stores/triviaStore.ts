@@ -31,7 +31,7 @@ interface TriviaStore {
   loadEvent: (eventId: string) => Promise<TriviaEvent | null>;
   fetchCategories: () => Promise<void>;
   setCurrentRound: (roundId: string | null) => void; // Accepts roundId, can unset
-  addRound: () => void;
+  addRound: () => Promise<NewTriviaRound>;
   addQuestions: (count: number) => Promise<void>;
   updateQuestion: (question: TriviaQuestion) => void;
   deleteQuestion: (questionId: string) => void;
@@ -154,42 +154,45 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  addRound: async () => {
+  addRound: async (): Promise<NewTriviaRound> => {
     const { event } = get();
-    if (!event || !('id' in event)) return;
 
-    try {
-      const response = await fetch(API_ENDPOINTS.rounds.create, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
-        },
-        body: JSON.stringify({
-          event_id: event.id,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create round');
-      }
-
-      const newRound = await response.json();
-
-      // Update the event with the new round
-      set((state) => {
-        if (!state.event) return state;
-        return {
-          event: {
-            ...state.event,
-            rounds: [...state.event.rounds, newRound],
-          },
-        };
-      });
-    } catch (error) {
-      console.error('Error creating round:', error);
-      throw error;
+    if (!event) {
+      return Promise.reject(new Error('No event found'));
     }
+
+    if (!('id' in event)) {
+      return Promise.reject(new Error('Event does not have an ID'));
+    }
+
+    const response = await fetch(API_ENDPOINTS.rounds.create, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
+      },
+      body: JSON.stringify({
+        event_id: event.id,
+      }),
+    });
+
+    if (!response.ok) {
+      return Promise.reject(new Error('Failed to create round'));
+    }
+
+    const newRound = await response.json();
+
+    set((state) => {
+      if (!state.event) return state;
+      return {
+        event: {
+          ...state.event,
+          rounds: [...state.event.rounds, newRound],
+        },
+      };
+    });
+
+    return newRound;
   },
 
   updateRound: (updatedRound) =>

@@ -22,6 +22,9 @@ interface RoundListProps {
   onUpdateRound: (round: NewTriviaRound) => void;
   onDeleteRound: (roundId: string) => void;
 }
+interface TempRound extends NewTriviaRound {
+  isTemp: boolean;
+}
 
 export default function RoundList({
   rounds,
@@ -31,6 +34,7 @@ export default function RoundList({
 }: RoundListProps) {
   const [editingRoundId, setEditingRoundId] = useState<string | null>(null);
   const [editedRoundName, setEditedRoundName] = useState<string>('');
+  const [tempRounds, setTempRounds] = useState<TempRound[]>([]);
   const { addRound } = useTriviaStore();
 
   const startEditing = (round: NewTriviaRound) => {
@@ -46,8 +50,18 @@ export default function RoundList({
     setEditingRoundId(null);
   };
 
-  const onAddRound = () => {
-    addRound();
+  const onAddRound = async () => {
+    const numRounds = rounds.length;
+    const tempRound: TempRound = {
+      id: crypto.randomUUID(),
+      name: `Round ${numRounds + 1}`,
+      roundNumber: numRounds + 1,
+      questions: [],
+      isTemp: true,
+    };
+    setTempRounds([...tempRounds, tempRound]);
+    await addRound();
+    setTempRounds(tempRounds.filter((round) => round.id !== tempRound.id));
   };
 
   return (
@@ -66,7 +80,7 @@ export default function RoundList({
       </Box>
 
       <Stack spacing={2}>
-        {rounds.map((round) => {
+        {[...rounds, ...tempRounds].map((round) => {
           return (
             <Card key={round.id}>
               <CardContent>
