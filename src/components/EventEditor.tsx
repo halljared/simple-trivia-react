@@ -10,12 +10,20 @@ import {
 } from '@mui/material';
 import { useEvent } from '@/contexts/EventContext';
 import { useTriviaStore } from '@/stores/triviaStore';
+import { useState, useEffect } from 'react';
 
 export default function EventEditor() {
   const navigate = useNavigate();
-  const { event, setEvent, addRound } = useEvent();
+  const { event } = useEvent();
+  const [eventName, setEventName] = useState('');
   const { updateRound, deleteRound, saveEvent, isLoadingEvent } =
     useTriviaStore();
+
+  useEffect(() => {
+    if (event?.name) {
+      setEventName(event.name);
+    }
+  }, [event?.name]);
 
   if (isLoadingEvent) {
     return (
@@ -44,8 +52,8 @@ export default function EventEditor() {
   };
 
   const handleSave = () => {
-    if (event?.name) {
-      saveEvent(event);
+    if (eventName) {
+      saveEvent({ ...event, name: eventName });
     }
   };
 
@@ -58,8 +66,8 @@ export default function EventEditor() {
         </Typography>
         <TextField
           fullWidth
-          value={event.name}
-          onChange={(e) => setEvent({ ...event, name: e.target.value })}
+          value={eventName}
+          onChange={(e) => setEventName(e.target.value)}
           label="Event Name"
           sx={{ mb: 2 }}
         />
@@ -79,7 +87,6 @@ export default function EventEditor() {
         onEditRound={handleEditRound}
         onUpdateRound={updateRound}
         onDeleteRound={deleteRound}
-        onAddRound={addRound}
       />
     </Box>
   );

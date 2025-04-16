@@ -5,7 +5,7 @@ import {
   TriviaEvent,
   TriviaQuestion,
   TriviaQuestionAPI,
-  TriviaRound,
+  NewTriviaRound,
   TriviaEventUnion,
   ListEvent,
 } from '../types/trivia';
@@ -13,9 +13,9 @@ import { API_ENDPOINTS } from '../config/api';
 import { useAuthStore } from './userStore';
 
 interface TriviaStore {
-  event: TriviaEvent | null;
+  event: TriviaEventUnion | null;
   categories: TriviaCategory[];
-  currentRound: TriviaRound | null; // Make currentRound nullable
+  currentRound: NewTriviaRound | null; // Make currentRound nullable
   isLoading: boolean;
   isLoadingEvent: boolean;
   isDeletingEvent: boolean; // Add loading state for deletion
@@ -23,9 +23,10 @@ interface TriviaStore {
   events: ListEvent[];
 
   // Actions
+  setEvent: (event: TriviaEventUnion) => void;
   saveEvent: (event: TriviaEventUnion) => void;
   loadEvents: () => Promise<void>;
-  updateRound: (round: TriviaRound) => void;
+  updateRound: (round: NewTriviaRound) => void;
   deleteRound: (roundId: string) => void;
   loadEvent: (eventId: string) => Promise<TriviaEvent | null>;
   fetchCategories: () => Promise<void>;
@@ -62,6 +63,10 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
+  setEvent: (event: TriviaEventUnion) => {
+    set({ event });
+  },
+
   setCurrentRound: (roundId) => {
     const event = get().event;
     if (event) {
@@ -95,8 +100,9 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       }
 
       const savedEvent = await response.json();
-      set({ event: savedEvent, isLoadingEvent: false });
-      return savedEvent; // Optionally return the saved event if needed
+      const merged = { ...event, ...savedEvent };
+      set({ event: merged, isLoadingEvent: false });
+      return merged;
     } catch (error) {
       console.error('Error saving event:', error);
       set({ isLoadingEvent: false });
@@ -148,28 +154,43 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  addRound: () =>
-    set((state) => {
-      if (!state.event) return state;
+  addRound: async () => {
+    const { event } = get();
+    if (!event || !('id' in event)) return;
 
-      const newRound = {
-        id: crypto.randomUUID(),
-        name: 'New Round',
-        questions: [],
-      };
+    try {
+      const response = await fetch(API_ENDPOINTS.rounds.create, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
+        },
+        body: JSON.stringify({
+          event_id: event.id,
+        }),
+      });
 
-      const updatedEvent = {
-        ...state.event,
-        rounds: [...state.event.rounds, newRound],
-      };
+      if (!response.ok) {
+        throw new Error('Failed to create round');
+      }
 
-      localStorage.setItem(
-        `event-${updatedEvent.id}`,
-        JSON.stringify(updatedEvent)
-      );
+      const newRound = await response.json();
 
-      return { event: updatedEvent };
-    }),
+      // Update the event with the new round
+      set((state) => {
+        if (!state.event) return state;
+        return {
+          event: {
+            ...state.event,
+            rounds: [...state.event.rounds, newRound],
+          },
+        };
+      });
+    } catch (error) {
+      console.error('Error creating round:', error);
+      throw error;
+    }
+  },
 
   updateRound: (updatedRound) =>
     set((state) => {

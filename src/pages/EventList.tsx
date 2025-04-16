@@ -93,8 +93,8 @@ export default function EventList() {
               <TableRow key={event.id}>
                 <TableCell>{event.name}</TableCell>
                 <TableCell>
-                  {event.event_date
-                    ? new Date(event.event_date).toLocaleDateString()
+                  {event.eventDate
+                    ? new Date(event.eventDate).toLocaleDateString()
                     : ''}
                 </TableCell>
                 <TableCell>{event.status}</TableCell>

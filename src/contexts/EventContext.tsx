@@ -3,8 +3,6 @@ import { TriviaEventUnion } from '../types/trivia';
 
 interface EventContextValue {
   event: TriviaEventUnion | null;
-  setEvent: React.Dispatch<React.SetStateAction<TriviaEventUnion | null>>;
-  addRound: () => void;
 }
 
 export const EventContext = createContext<EventContextValue | undefined>(

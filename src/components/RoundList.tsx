@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TriviaRound } from '../types/trivia';
+import { NewTriviaRound } from '../types/trivia';
 import {
   Box,
   Typography,
@@ -15,13 +15,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import QuizIcon from '@mui/icons-material/Quiz';
-
+import { useTriviaStore } from '@/stores/triviaStore';
 interface RoundListProps {
-  rounds: TriviaRound[];
+  rounds: NewTriviaRound[];
   onEditRound: (roundId: string) => void;
-  onUpdateRound: (round: TriviaRound) => void;
+  onUpdateRound: (round: NewTriviaRound) => void;
   onDeleteRound: (roundId: string) => void;
-  onAddRound: () => void;
 }
 
 export default function RoundList({
@@ -29,22 +28,26 @@ export default function RoundList({
   onEditRound,
   onUpdateRound,
   onDeleteRound,
-  onAddRound,
 }: RoundListProps) {
   const [editingRoundId, setEditingRoundId] = useState<string | null>(null);
   const [editedRoundName, setEditedRoundName] = useState<string>('');
+  const { addRound } = useTriviaStore();
 
-  const startEditing = (round: TriviaRound) => {
+  const startEditing = (round: NewTriviaRound) => {
     setEditingRoundId(round.id);
     setEditedRoundName(round.name);
   };
 
-  const saveRoundName = (round: TriviaRound) => {
+  const saveRoundName = (round: NewTriviaRound) => {
     onUpdateRound({
       ...round,
       name: editedRoundName,
     });
     setEditingRoundId(null);
+  };
+
+  const onAddRound = () => {
+    addRound();
   };
 
   return (
@@ -108,7 +111,6 @@ export default function RoundList({
                           {round.name}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          {round.questions.length} questions
                           {round.categoryId &&
                             ` • From category ${round.categoryId}`}
                         </Typography>

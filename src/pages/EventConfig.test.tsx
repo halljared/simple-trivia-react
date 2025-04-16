@@ -5,7 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import EventConfig from './EventConfig';
 import { useTriviaStore } from '../stores/triviaStore'; // Path to your store
 // Make sure TriviaEvent type allows null for initial state testing
-import { TriviaEvent, TriviaRound } from '../types/trivia'; // Path to your types
+import { TriviaEvent, NewTriviaRound } from '../types/trivia'; // Path to your types
 
 // --- Mocking Dependencies ---
 
@@ -48,7 +48,7 @@ describe('EventConfig Page', () => {
     rounds: [
       { id: 'round-1', name: 'Round One', questions: [] },
       { id: 'round-2', name: 'Round Two', questions: [] },
-    ] as TriviaRound[],
+    ] as NewTriviaRound[],
     status: 'upcoming',
   });
 

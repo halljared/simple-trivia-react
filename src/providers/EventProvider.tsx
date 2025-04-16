@@ -1,5 +1,5 @@
-import { ReactNode, useState, useEffect } from 'react';
-import { NewTriviaEvent, TriviaEventUnion } from '../types/trivia';
+import { ReactNode, useEffect } from 'react';
+import { NewTriviaEvent } from '../types/trivia';
 import { EventContext } from '../contexts/EventContext';
 import { useTriviaStore } from '../stores/triviaStore';
 import { useParams } from '@tanstack/react-router';
@@ -8,17 +8,14 @@ interface EventProviderProps {
 }
 
 export function EventProvider({ children }: EventProviderProps) {
-  const [event, setEvent] = useState<TriviaEventUnion | null>(null);
-  const { loadEvent } = useTriviaStore();
+  const { event, loadEvent, setEvent } = useTriviaStore();
 
   const { eventId } = useParams({ strict: false });
 
   // Initialize event if none exists
   useEffect(() => {
     if (eventId) {
-      loadEvent(eventId).then((event) => {
-        setEvent(event);
-      });
+      loadEvent(eventId);
     } else {
       const newEvent: NewTriviaEvent = {
         name: '',
@@ -29,29 +26,10 @@ export function EventProvider({ children }: EventProviderProps) {
       };
       setEvent(newEvent);
     }
-  }, [eventId, loadEvent]);
-
-  const addRound = () => {
-    setEvent((prevEvent) => {
-      if (prevEvent) {
-        const newRound = {
-          id: crypto.randomUUID(),
-          name: 'New Round',
-          questions: [],
-        };
-        return {
-          ...prevEvent,
-          rounds: [...prevEvent.rounds, newRound],
-        };
-      }
-      return prevEvent;
-    });
-  };
+  }, [eventId, loadEvent, setEvent]);
 
   const value = {
     event,
-    setEvent,
-    addRound,
   };
 
   return (

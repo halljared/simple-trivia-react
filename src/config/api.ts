@@ -29,4 +29,9 @@ export const API_ENDPOINTS = {
     checkAnswer: `${API_BASE_URL}/api/check-answer`,
   },
   difficulties: `${API_BASE_URL}/api/difficulties`,
+  rounds: {
+    create: `${API_BASE_URL}/api/rounds`,
+    getQuestions: (roundId: string) =>
+      `${API_BASE_URL}/api/rounds/${roundId}/questions`,
+  },
 };
