@@ -18,6 +18,8 @@ interface TriviaStore {
   currentRound: TriviaRound | null; // Make currentRound nullable
   isLoading: boolean;
   isLoadingEvent: boolean;
+  isDeletingEvent: boolean; // Add loading state for deletion
+  isLoadingEvents: boolean; // Add loading state for events list
   events: ListEvent[];
 
   // Actions
@@ -37,6 +39,7 @@ interface TriviaStore {
     categoryId: number,
     count: number
   ) => Promise<TriviaQuestion[]>;
+  deleteEvent: (eventId: string) => Promise<void>; // Add delete event function
 }
 
 export const useTriviaStore = create<TriviaStore>((set, get) => ({
@@ -45,6 +48,8 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
   currentRound: null, // Initialize as null
   isLoading: false,
   isLoadingEvent: false,
+  isDeletingEvent: false, // Initialize deletion loading state
+  isLoadingEvents: false, // Initialize loading state
   events: [],
 
   fetchCategories: async () => {
@@ -123,6 +128,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
   },
 
   loadEvents: async () => {
+    set({ isLoadingEvents: true });
     try {
       const response = await fetch(API_ENDPOINTS.events.my, {
         headers: {
@@ -135,11 +141,10 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       }
 
       const events: ListEvent[] = await response.json();
-      set({ events });
+      set({ events, isLoadingEvents: false });
     } catch (error) {
       console.error('Error loading events:', error);
-      // You might want to set some error state here
-      set({ events: [] });
+      set({ events: [], isLoadingEvents: false });
     }
   },
 
@@ -288,6 +293,32 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     } catch (error) {
       console.error('Failed to fetch questions:', error);
       return [];
+    }
+  },
+
+  deleteEvent: async (eventId: string) => {
+    set({ isDeletingEvent: true });
+    try {
+      const response = await fetch(API_ENDPOINTS.events.get(eventId), {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete event');
+      }
+
+      // Remove the event from the local events list
+      set((state) => ({
+        events: state.events.filter((e) => e.id !== eventId),
+        isDeletingEvent: false,
+      }));
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      set({ isDeletingEvent: false });
+      throw error;
     }
   },
 }));

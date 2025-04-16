@@ -7,6 +7,8 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  CircularProgress,
+  Typography,
 } from '@mui/material';
 import { useNavigate } from '@tanstack/react-router';
 import { useTriviaStore } from '@/stores/triviaStore';
@@ -16,9 +18,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import { ListEvent } from '@/types/trivia';
 import { editQuizRoute } from '@/config/routes';
+
 export default function EventList() {
   const navigate = useNavigate();
-  const { events, loadEvents } = useTriviaStore();
+  const { events, loadEvents, deleteEvent, isDeletingEvent, isLoadingEvents } =
+    useTriviaStore();
 
   // Load events when component mounts
   useEffect(() => {
@@ -29,15 +33,48 @@ export default function EventList() {
     navigate({ to: editQuizRoute.id, params: { eventId: event.id } });
   };
 
-  const handleDelete = (eventId: string) => {
-    // Remove from local storage
-    localStorage.removeItem(`event-${eventId}`);
-    // Remove from events list
-    const updatedEvents = events.filter((e) => e.id !== eventId);
-    localStorage.setItem('events', JSON.stringify(updatedEvents));
-    // Reload events
-    loadEvents();
+  const handleDelete = async (eventId: string) => {
+    try {
+      await deleteEvent(eventId);
+    } catch (error) {
+      console.error('Failed to delete event:', error);
+      // You might want to show an error message to the user here
+    }
   };
+
+  if (isLoadingEvents) {
+    return (
+      <Box
+        sx={{
+          p: 3,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '200px',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <Box
+        sx={{
+          p: 3,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '200px',
+        }}
+      >
+        <Typography variant="h6" color="text.secondary">
+          No events found
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -68,8 +105,13 @@ export default function EventList() {
                   <IconButton
                     onClick={() => handleDelete(event.id)}
                     color="error"
+                    disabled={isDeletingEvent}
                   >
-                    <DeleteIcon />
+                    {isDeletingEvent ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      <DeleteIcon />
+                    )}
                   </IconButton>
                 </TableCell>
               </TableRow>
