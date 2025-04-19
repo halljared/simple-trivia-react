@@ -16,8 +16,7 @@ export default function EventEditor() {
   const navigate = useNavigate();
   const { event } = useEvent();
   const [eventName, setEventName] = useState('');
-  const { updateRound, deleteRound, saveEvent, isLoadingEvent } =
-    useTriviaStore();
+  const { saveEvent, isLoadingEvent } = useTriviaStore();
 
   useEffect(() => {
     if (event?.name) {
@@ -82,12 +81,7 @@ export default function EventEditor() {
         </Button>
       </Paper>
 
-      <RoundList
-        rounds={event.rounds}
-        onEditRound={handleEditRound}
-        onUpdateRound={updateRound}
-        onDeleteRound={deleteRound}
-      />
+      <RoundList rounds={event.rounds} onEditRound={handleEditRound} />
     </Box>
   );
 }

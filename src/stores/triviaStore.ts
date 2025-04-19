@@ -15,11 +15,12 @@ import { useAuthStore } from './userStore';
 interface TriviaStore {
   event: TriviaEventUnion | null;
   categories: TriviaCategory[];
-  currentRound: NewTriviaRound | null; // Make currentRound nullable
+  currentRound: NewTriviaRound | null;
   isLoading: boolean;
   isLoadingEvent: boolean;
-  isDeletingEvent: boolean; // Add loading state for deletion
-  isLoadingEvents: boolean; // Add loading state for events list
+  isDeletingEvent: boolean;
+  isDeletingRound: boolean;
+  isLoadingEvents: boolean;
   events: ListEvent[];
 
   // Actions
@@ -30,7 +31,7 @@ interface TriviaStore {
   deleteRound: (roundId: string) => void;
   loadEvent: (eventId: string) => Promise<TriviaEvent | null>;
   fetchCategories: () => Promise<void>;
-  setCurrentRound: (roundId: string | null) => void; // Accepts roundId, can unset
+  setCurrentRound: (roundId: string | null) => void;
   addRound: () => Promise<NewTriviaRound>;
   addQuestions: (count: number) => Promise<void>;
   updateQuestion: (question: TriviaQuestion) => void;
@@ -40,17 +41,18 @@ interface TriviaStore {
     categoryId: number,
     count: number
   ) => Promise<TriviaQuestion[]>;
-  deleteEvent: (eventId: string) => Promise<void>; // Add delete event function
+  deleteEvent: (eventId: string) => Promise<void>;
 }
 
 export const useTriviaStore = create<TriviaStore>((set, get) => ({
   event: null,
   categories: [],
-  currentRound: null, // Initialize as null
+  currentRound: null,
   isLoading: false,
   isLoadingEvent: false,
-  isDeletingEvent: false, // Initialize deletion loading state
-  isLoadingEvents: false, // Initialize loading state
+  isDeletingEvent: false,
+  isLoadingEvents: false,
+  isDeletingRound: false,
   events: [],
 
   fetchCategories: async () => {
@@ -71,9 +73,9 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     const event = get().event;
     if (event) {
       const round = event.rounds.find((r) => r.id === roundId);
-      set({ currentRound: round || null }); // Set to null if not found
+      set({ currentRound: round || null });
     } else {
-      set({ currentRound: null }); // No event, so no round
+      set({ currentRound: null });
     }
   },
 
@@ -213,21 +215,37 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       return { event: updatedEvent, currentRound: updatedRound }; // Update currentRound too!
     }),
 
-  deleteRound: (roundId) =>
-    set((state) => {
-      if (!state.event) return state;
+  deleteRound: async (roundId: string) => {
+    set({ isDeletingRound: true });
+    try {
+      const response = await fetch(API_ENDPOINTS.rounds.get(roundId), {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
+        },
+      });
 
-      const updatedEvent = {
-        ...state.event,
-        rounds: state.event.rounds.filter((r) => r.id !== roundId),
-      };
+      if (!response.ok) {
+        throw new Error('Failed to delete round');
+      }
 
-      localStorage.setItem(
-        `event-${updatedEvent.id}`,
-        JSON.stringify(updatedEvent)
-      );
-      return { event: updatedEvent };
-    }),
+      // Remove the round from the local rounds list
+      set((state) => {
+        if (!state.event) return state;
+        return {
+          event: {
+            ...state.event,
+            rounds: state.event.rounds.filter((r) => r.id !== roundId),
+          },
+          isDeletingRound: false,
+        };
+      });
+    } catch (error) {
+      console.error('Error deleting round:', error);
+      set({ isDeletingRound: false });
+      throw error;
+    }
+  },
 
   addQuestions: async (count) => {
     const { currentRound } = get();

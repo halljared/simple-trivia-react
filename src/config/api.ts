@@ -33,5 +33,6 @@ export const API_ENDPOINTS = {
     create: `${API_BASE_URL}/api/rounds`,
     getQuestions: (roundId: string) =>
       `${API_BASE_URL}/api/rounds/${roundId}/questions`,
+    get: (roundId: string) => `${API_BASE_URL}/api/rounds/${roundId}`,
   },
 };
