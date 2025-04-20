@@ -8,21 +8,37 @@ import {
   CardContent,
   Stack,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QuizIcon from '@mui/icons-material/Quiz';
 import { useTriviaStore } from '@/stores/triviaStore';
+import { useEvent } from '@/contexts/EventContext';
+import { useNavigate } from '@tanstack/react-router';
+
 interface RoundListProps {
   rounds: NewTriviaRound[];
-  onEditRound: (roundId: string) => void;
 }
+
 interface TempRound extends NewTriviaRound {
   isTemp: boolean;
 }
 
-export default function RoundList({ rounds, onEditRound }: RoundListProps) {
+export default function RoundList({ rounds }: RoundListProps) {
   const [tempRounds, setTempRounds] = useState<TempRound[]>([]);
+  const [deletingRounds, setDeletingRounds] = useState<Set<string>>(new Set());
   const { addRound, deleteRound } = useTriviaStore();
+  const { event } = useEvent();
+  const navigate = useNavigate();
+
+  const onEditRound = (roundId: string) => {
+    if (!event) return;
+    if ('id' in event) {
+      navigate({
+        to: `/events/${event.id}/rounds/${roundId}`,
+      });
+    }
+  };
 
   const onAddRound = async () => {
     const numRounds = rounds.length;
@@ -51,7 +67,18 @@ export default function RoundList({ rounds, onEditRound }: RoundListProps) {
   };
 
   const onDeleteRound = async (roundId: string) => {
-    await deleteRound(roundId);
+    setDeletingRounds((prev) => new Set(prev).add(roundId));
+    try {
+      await deleteRound(roundId);
+    } catch (error) {
+      console.error('Failed to delete round:', error);
+    } finally {
+      setDeletingRounds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(roundId);
+        return newSet;
+      });
+    }
   };
 
   return (
@@ -71,6 +98,7 @@ export default function RoundList({ rounds, onEditRound }: RoundListProps) {
 
       <Stack spacing={2}>
         {[...rounds, ...tempRounds].map((round) => {
+          const isDeleting = deletingRounds.has(round.id);
           return (
             <Card key={round.id}>
               <CardContent>
@@ -102,8 +130,13 @@ export default function RoundList({ rounds, onEditRound }: RoundListProps) {
                     <IconButton
                       onClick={() => onDeleteRound(round.id)}
                       color="error"
+                      disabled={isDeleting}
                     >
-                      <DeleteIcon />
+                      {isDeleting ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <DeleteIcon />
+                      )}
                     </IconButton>
                   </Box>
                 </Box>

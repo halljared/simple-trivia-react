@@ -19,10 +19,10 @@ export default function EventEditor() {
   const { saveEvent, isLoadingEvent } = useTriviaStore();
 
   useEffect(() => {
-    if (event?.name) {
+    if (event) {
       setEventName(event.name);
     }
-  }, [event?.name]);
+  }, [event]);
 
   if (isLoadingEvent) {
     return (
@@ -41,14 +41,6 @@ export default function EventEditor() {
   }
 
   if (!event) return null;
-
-  const handleEditRound = (roundId: string) => {
-    if ('id' in event) {
-      navigate({
-        to: `/events/${event.id}/rounds/${roundId}`,
-      });
-    }
-  };
 
   const handleSave = () => {
     if (eventName) {
@@ -81,7 +73,7 @@ export default function EventEditor() {
         </Button>
       </Paper>
 
-      <RoundList rounds={event.rounds} onEditRound={handleEditRound} />
+      <RoundList rounds={event.rounds} />
     </Box>
   );
 }
