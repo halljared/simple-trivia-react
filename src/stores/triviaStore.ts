@@ -8,9 +8,11 @@ import {
   ListEvent,
   RoundAPI,
   TriviaRound,
+  EventStatus,
 } from '../types/trivia';
 import { API_ENDPOINTS } from '../config/api';
 import { useAuthStore } from './userStore';
+import { mapQuestionType } from '../util/helpers';
 
 interface TriviaStore {
   event: TriviaEvent | null;
@@ -28,7 +30,7 @@ interface TriviaStore {
   setEvent: (event: TriviaEvent) => void;
   saveEvent: (event: TriviaEvent) => void;
   loadEvents: () => Promise<void>;
-  updateRound: (round: NewTriviaRound) => void;
+  updateRound: (round: TriviaRound) => void;
   deleteRound: (roundId: string) => void;
   loadEvent: (eventId: string) => Promise<TriviaEvent | null>;
   fetchCategories: () => Promise<void>;
@@ -43,7 +45,7 @@ interface TriviaStore {
     count: number
   ) => Promise<TriviaQuestion[]>;
   deleteEvent: (eventId: string) => Promise<void>;
-  loadRound: (roundId: string) => Promise<NewTriviaRound | null>;
+  loadRound: (roundId: string) => Promise<TriviaRound | null>;
 }
 
 export const useTriviaStore = create<TriviaStore>((set, get) => ({
@@ -94,7 +96,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         body: JSON.stringify({
           id: 'id' in event ? event.id : undefined,
           name: event.name,
-          event_date: event.date,
+          eventDate: event.eventDate,
           description: event.description ?? '',
           status: event.status,
         }),
@@ -202,7 +204,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     return newRound;
   },
 
-  updateRound: (updatedRound) =>
+  updateRound: (updatedRound: TriviaRound) =>
     set((state) => {
       if (!state.event) return state;
 
@@ -213,10 +215,6 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         ),
       };
 
-      localStorage.setItem(
-        `event-${updatedEvent.id}`,
-        JSON.stringify(updatedEvent)
-      );
       return { event: updatedEvent, currentRound: updatedRound };
     }),
 
@@ -251,7 +249,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  loadRound: async (roundId: string): Promise<NewTriviaRound | null> => {
+  loadRound: async (roundId: string): Promise<TriviaRound | null> => {
     set({ isLoadingRound: true });
     try {
       const response = await fetch(API_ENDPOINTS.rounds.get(roundId), {
@@ -267,38 +265,51 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       const roundData: RoundAPI = await response.json();
 
       // Map the questions to match TriviaQuestion type
-      const questions: TriviaQuestion[] = roundData.questions.map((q) => ({
-        id: q.questionId || crypto.randomUUID(),
-        questionText: q.question,
-        answerText: q.answer,
-        type: q.questionType || 'open-ended',
-        points: q.difficulty || 1,
-        difficulty: q.difficulty,
-      }));
+      const questions: TriviaQuestion[] = roundData.questions.map((q) => {
+        return {
+          id: q.questionId || crypto.randomUUID(),
+          questionText: q.question,
+          answerText: q.answer,
+          type: mapQuestionType(q.questionType), // Use imported helper function
+          points: q.difficulty || 1,
+          difficulty: q.difficulty,
+        };
+      });
 
-      // Construct the round object matching NewTriviaRound
+      // Construct the round object matching TriviaRound
       const round: TriviaRound = {
         id: roundData.id,
+        eventId: roundData.eventId,
         name: roundData.name,
         roundNumber: roundData.roundNumber,
-        eventId: roundData.eventId,
         categoryId: roundData.categoryId ?? undefined,
         questions,
+        createdAt: roundData.createdAt, // Add createdAt from API
       };
 
       // Update the store: set currentRound and update event's rounds
       set((state) => {
-        // If no event, initialize it with minimal data to avoid undefined rounds
+        // If no event, initialize it with minimal data matching TriviaEvent
         const currentEvent = state.event || {
           id: roundData.eventId,
-          name: '',
-          date: '',
-          status: 'draft',
+          name: '', // Provide default name
+          eventDate: '', // Provide default date (or consider fetching event details)
+          status: EventStatus.DRAFT, // Use enum value
           rounds: [],
+          createdAt: new Date().toISOString(), // Provide default createdAt
+          userId: '', // Provide default userId (needs actual user ID)
+          // description: '', // Optional
         };
+        // Ensure the user ID is correctly set when initializing the event object
+        // This might require accessing the userStore or having userId available
+        if (!state.event) {
+          currentEvent.userId = `${useAuthStore.getState().user?.id || ''}`;
+        }
+
         const updatedRounds = currentEvent.rounds.some((r) => r.id === round.id)
           ? currentEvent.rounds.map((r) => (r.id === round.id ? round : r))
           : [...currentEvent.rounds, round];
+
         return {
           event: { ...currentEvent, rounds: updatedRounds },
           currentRound: round,
@@ -379,17 +390,25 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     });
   },
 
-  fetchQuestionsForCategory: async (categoryId: number, count: number) => {
+  fetchQuestionsForCategory: async (
+    categoryId: number,
+    count: number
+  ): Promise<TriviaQuestion[]> => {
     try {
       const response = await fetch(
         API_ENDPOINTS.questions.byCategory(categoryId, count)
       );
-      const questions: TriviaQuestionAPI[] = await response.json();
-      return questions.map((q) => ({
-        question: q.question,
-        answer: q.answer,
-        type: 'open-ended',
-        difficulty: q.difficulty,
+      const questionsAPI: TriviaQuestionAPI[] = await response.json();
+
+      // Map API response to TriviaQuestion type
+      return questionsAPI.map((q) => ({
+        id: crypto.randomUUID(), // Generate client-side ID
+        questionText: q.question,
+        answerText: q.answer,
+        type: mapQuestionType(q.type), // Use imported helper function
+        difficulty: q.difficulty, // Already number
+        points: q.difficulty || 1, // Use difficulty for points
+        options: q.options, // Include options if present
       }));
     } catch (error) {
       console.error('Failed to fetch questions:', error);

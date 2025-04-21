@@ -1,21 +1,18 @@
 export interface NewTriviaEvent {
   name: string;
-  date: Date;
-  host: string;
+  eventDate: string;
   rounds: TriviaRound[];
-  status: 'upcoming' | 'in-progress' | 'completed';
-  totalPoints?: number;
+  status: EventStatus;
   description?: string;
 }
 
 export interface TriviaEvent extends NewTriviaEvent {
   id: string;
-  createdAt: Date;
+  userId: string;
 }
 
 export interface NewTriviaRound {
   name: string;
-  description?: string;
   categoryId?: number;
   roundNumber: number;
   questions: TriviaQuestion[];
@@ -23,24 +20,25 @@ export interface NewTriviaRound {
 
 export interface TriviaRound extends NewTriviaRound {
   id: string;
-  createdAt: Date;
+  eventId: string;
+  createdAt: string;
 }
 
 export interface TriviaQuestionAPI {
-  id: string;
   question: string;
   answer: string;
-  type: 'multiple-choice' | 'true-false' | 'open-ended';
-  difficulty: string;
+  type: QuestionType;
+  difficulty: number;
   options?: string[];
 }
 
 export interface TriviaQuestion {
   id: string;
-  question: string;
-  answer: string;
-  type: 'multiple-choice' | 'true-false' | 'open-ended';
-  difficulty: string;
+  questionText: string;
+  answerText: string;
+  type: QuestionType;
+  difficulty: number;
+  points: number;
   options?: string[];
 }
 
@@ -51,23 +49,23 @@ export interface TriviaCategory {
 }
 
 export enum QuestionType {
-  MULTIPLE_CHOICE = 'Multiple Choice',
-  TRUE_FALSE = 'True/False',
-  OPEN_ENDED = 'Open Ended',
+  MULTIPLE_CHOICE = 'multiple-choice',
+  TRUE_FALSE = 'true-false',
+  OPEN_ENDED = 'open-ended',
   // Add other types as needed
 }
 
 export enum QuestionDifficulty {
-  EASY = 'Easy',
-  MEDIUM = 'Medium',
-  HARD = 'Hard',
+  EASY = 1,
+  MEDIUM = 2,
+  HARD = 3,
 }
 
-export interface Question {
-  id: string;
-  type: QuestionType;
-  difficulty: QuestionDifficulty;
-  // ... other question properties
+export enum EventStatus {
+  DRAFT = 'draft',
+  UPCOMING = 'upcoming',
+  IN_PROGRESS = 'in-progress',
+  COMPLETED = 'completed',
 }
 
 export enum TriviaCategoryNames {
@@ -101,13 +99,12 @@ export interface RoundQuestionAPI {
   categoryName: string;
 }
 
-// Type for the full round API response
 export interface RoundAPI {
   id: string;
   name: string;
-  vroundNumber: number;
+  roundNumber: number;
   eventId: string;
   categoryId: number | null;
-  createdAt: string | null;
+  createdAt: string;
   questions: RoundQuestionAPI[];
 }
