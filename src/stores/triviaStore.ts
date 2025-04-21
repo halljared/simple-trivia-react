@@ -26,7 +26,6 @@ interface TriviaStore {
   isLoadingRound: boolean;
   events: ListEvent[];
 
-  // Actions (same as before)
   setEvent: (event: TriviaEvent) => void;
   saveEvent: (event: TriviaEvent) => void;
   loadEvents: () => Promise<void>;
@@ -264,19 +263,16 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
 
       const roundData: RoundAPI = await response.json();
 
-      // Map the questions to match TriviaQuestion type
       const questions: TriviaQuestion[] = roundData.questions.map((q) => {
         return {
           id: q.questionId || crypto.randomUUID(),
           questionText: q.question,
           answerText: q.answer,
-          type: mapQuestionType(q.questionType), // Use imported helper function
-          points: q.difficulty || 1,
+          type: mapQuestionType(q.questionType),
           difficulty: q.difficulty,
         };
       });
 
-      // Construct the round object matching TriviaRound
       const round: TriviaRound = {
         id: roundData.id,
         eventId: roundData.eventId,
@@ -284,24 +280,19 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         roundNumber: roundData.roundNumber,
         categoryId: roundData.categoryId ?? undefined,
         questions,
-        createdAt: roundData.createdAt, // Add createdAt from API
+        createdAt: roundData.createdAt,
       };
 
-      // Update the store: set currentRound and update event's rounds
       set((state) => {
-        // If no event, initialize it with minimal data matching TriviaEvent
         const currentEvent = state.event || {
           id: roundData.eventId,
-          name: '', // Provide default name
-          eventDate: '', // Provide default date (or consider fetching event details)
-          status: EventStatus.DRAFT, // Use enum value
+          name: '',
+          eventDate: '',
+          status: EventStatus.DRAFT,
           rounds: [],
-          createdAt: new Date().toISOString(), // Provide default createdAt
-          userId: '', // Provide default userId (needs actual user ID)
-          // description: '', // Optional
+          createdAt: new Date().toISOString(),
+          userId: '',
         };
-        // Ensure the user ID is correctly set when initializing the event object
-        // This might require accessing the userStore or having userId available
         if (!state.event) {
           currentEvent.userId = `${useAuthStore.getState().user?.id || ''}`;
         }
@@ -400,15 +391,13 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       );
       const questionsAPI: TriviaQuestionAPI[] = await response.json();
 
-      // Map API response to TriviaQuestion type
       return questionsAPI.map((q) => ({
-        id: crypto.randomUUID(), // Generate client-side ID
+        id: crypto.randomUUID(),
         questionText: q.question,
         answerText: q.answer,
-        type: mapQuestionType(q.type), // Use imported helper function
-        difficulty: q.difficulty, // Already number
-        points: q.difficulty || 1, // Use difficulty for points
-        options: q.options, // Include options if present
+        type: mapQuestionType(q.type),
+        difficulty: q.difficulty,
+        options: q.options,
       }));
     } catch (error) {
       console.error('Failed to fetch questions:', error);

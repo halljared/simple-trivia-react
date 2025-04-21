@@ -38,7 +38,6 @@ export interface TriviaQuestion {
   answerText: string;
   type: QuestionType;
   difficulty: number;
-  points: number;
   options?: string[];
 }
 
@@ -52,13 +51,12 @@ export enum QuestionType {
   MULTIPLE_CHOICE = 'multiple-choice',
   TRUE_FALSE = 'true-false',
   OPEN_ENDED = 'open-ended',
-  // Add other types as needed
 }
 
 export enum QuestionDifficulty {
-  EASY = 1,
-  MEDIUM = 2,
-  HARD = 3,
+  EASY = 'easy',
+  MEDIUM = 'medium',
+  HARD = 'hard',
 }
 
 export enum EventStatus {

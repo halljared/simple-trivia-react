@@ -8,11 +8,9 @@ import { QuestionType } from '../types/trivia';
 export const mapQuestionType = (
   typeStr: string | QuestionType
 ): QuestionType => {
-  // If it's already a QuestionType, return it
   if (Object.values(QuestionType).includes(typeStr as QuestionType)) {
     return typeStr as QuestionType;
   }
-  // Otherwise, find the matching enum value for the string
   const enumValue = Object.values(QuestionType).find((val) => val === typeStr);
-  return enumValue || QuestionType.OPEN_ENDED; // Default to OPEN_ENDED if no match
+  return enumValue || QuestionType.OPEN_ENDED;
 };
