@@ -1,21 +1,21 @@
 import { create } from 'zustand';
 import {
   TriviaCategory,
-  TriviaEvent,
   TriviaQuestion,
   TriviaQuestionAPI,
   NewTriviaRound,
-  TriviaEventUnion,
+  TriviaEvent,
   ListEvent,
-  RoundAPI, // Added import
+  RoundAPI,
+  TriviaRound,
 } from '../types/trivia';
 import { API_ENDPOINTS } from '../config/api';
 import { useAuthStore } from './userStore';
 
 interface TriviaStore {
-  event: TriviaEventUnion | null;
+  event: TriviaEvent | null;
   categories: TriviaCategory[];
-  currentRound: NewTriviaRound | null;
+  currentRound: TriviaRound | null;
   isLoading: boolean;
   isLoadingEvent: boolean;
   isDeletingEvent: boolean;
@@ -24,9 +24,9 @@ interface TriviaStore {
   isLoadingRound: boolean;
   events: ListEvent[];
 
-  // Actions
-  setEvent: (event: TriviaEventUnion) => void;
-  saveEvent: (event: TriviaEventUnion) => void;
+  // Actions (same as before)
+  setEvent: (event: TriviaEvent) => void;
+  saveEvent: (event: TriviaEvent) => void;
   loadEvents: () => Promise<void>;
   updateRound: (round: NewTriviaRound) => void;
   deleteRound: (roundId: string) => void;
@@ -68,7 +68,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  setEvent: (event: TriviaEventUnion) => {
+  setEvent: (event: TriviaEvent) => {
     set({ event });
   },
 
@@ -129,8 +129,10 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       }
 
       const event = await response.json();
-      set({ event, isLoadingEvent: false });
-      return event;
+      // Ensure rounds is always an array
+      const normalizedEvent = { ...event, rounds: event.rounds || [] };
+      set({ event: normalizedEvent, isLoadingEvent: false });
+      return normalizedEvent;
     } catch (error) {
       console.error('Error loading event:', error);
       set({ isLoadingEvent: false });
@@ -275,25 +277,30 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       }));
 
       // Construct the round object matching NewTriviaRound
-      const round: NewTriviaRound = {
+      const round: TriviaRound = {
         id: roundData.id,
         name: roundData.name,
         roundNumber: roundData.roundNumber,
         eventId: roundData.eventId,
-        categoryId: roundData.categoryId ?? undefined, // Convert null to undefined for consistency
+        categoryId: roundData.categoryId ?? undefined,
         questions,
       };
 
       // Update the store: set currentRound and update event's rounds
       set((state) => {
-        if (!state.event) {
-          return { currentRound: round, isLoadingRound: false };
-        }
-        const updatedRounds = state.event.rounds.some((r) => r.id === round.id)
-          ? state.event.rounds.map((r) => (r.id === round.id ? round : r))
-          : [...state.event.rounds, round];
+        // If no event, initialize it with minimal data to avoid undefined rounds
+        const currentEvent = state.event || {
+          id: roundData.eventId,
+          name: '',
+          date: '',
+          status: 'draft',
+          rounds: [],
+        };
+        const updatedRounds = currentEvent.rounds.some((r) => r.id === round.id)
+          ? currentEvent.rounds.map((r) => (r.id === round.id ? round : r))
+          : [...currentEvent.rounds, round];
         return {
-          event: { ...state.event, rounds: updatedRounds },
+          event: { ...currentEvent, rounds: updatedRounds },
           currentRound: round,
           isLoadingRound: false,
         };
@@ -379,11 +386,9 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       );
       const questions: TriviaQuestionAPI[] = await response.json();
       return questions.map((q) => ({
-        id: crypto.randomUUID(),
-        questionText: q.question,
-        answerText: q.answer,
+        question: q.question,
+        answer: q.answer,
         type: 'open-ended',
-        points: 1,
         difficulty: q.difficulty,
       }));
     } catch (error) {

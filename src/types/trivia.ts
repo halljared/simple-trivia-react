@@ -2,7 +2,7 @@ export interface NewTriviaEvent {
   name: string;
   date: Date;
   host: string;
-  rounds: NewTriviaRound[];
+  rounds: TriviaRound[];
   status: 'upcoming' | 'in-progress' | 'completed';
   totalPoints?: number;
   description?: string;
@@ -11,13 +11,9 @@ export interface NewTriviaEvent {
 export interface TriviaEvent extends NewTriviaEvent {
   id: string;
   createdAt: Date;
-  updatedAt: Date;
 }
 
-export type TriviaEventUnion = NewTriviaEvent | TriviaEvent;
-
 export interface NewTriviaRound {
-  id: string;
   name: string;
   description?: string;
   categoryId?: number;
@@ -25,10 +21,24 @@ export interface NewTriviaRound {
   questions: TriviaQuestion[];
 }
 
+export interface TriviaRound extends NewTriviaRound {
+  id: string;
+  createdAt: Date;
+}
+
+export interface TriviaQuestionAPI {
+  id: string;
+  question: string;
+  answer: string;
+  type: 'multiple-choice' | 'true-false' | 'open-ended';
+  difficulty: string;
+  options?: string[];
+}
+
 export interface TriviaQuestion {
   id: string;
-  questionText: string;
-  answerText: string;
+  question: string;
+  answer: string;
   type: 'multiple-choice' | 'true-false' | 'open-ended';
   difficulty: string;
   options?: string[];
@@ -38,14 +48,6 @@ export interface TriviaCategory {
   id: number;
   name: string;
   questionCount: number;
-}
-
-export interface TriviaQuestionAPI {
-  id: number;
-  question: string;
-  answer: string;
-  category: string;
-  difficulty: string;
 }
 
 export enum QuestionType {
@@ -103,7 +105,7 @@ export interface RoundQuestionAPI {
 export interface RoundAPI {
   id: string;
   name: string;
-  roundNumber: number;
+  vroundNumber: number;
   eventId: string;
   categoryId: number | null;
   createdAt: string | null;

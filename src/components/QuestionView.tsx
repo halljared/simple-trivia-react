@@ -34,7 +34,7 @@ interface QuestionViewProps {
 export function QuestionView({ question }: QuestionViewProps) {
   return (
     <div>
-      <div>{question.questionText}</div>
+      <div>{question.question}</div>
       <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
         <Chip
           label={typeDisplayMap[question.type] || question.type}

@@ -22,11 +22,11 @@ export default function QuestionEditor({
         fullWidth
         multiline
         rows={2}
-        value={editedQuestion.questionText}
+        value={editedQuestion.question}
         onChange={(e) =>
           setEditedQuestion((prev) => ({
             ...prev,
-            questionText: e.target.value,
+            question: e.target.value,
           }))
         }
         label="Question Text"
