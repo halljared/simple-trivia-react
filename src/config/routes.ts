@@ -52,8 +52,8 @@ const editQuizRoute = createRoute({
 });
 
 const roundEditorRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/events/$eventId/rounds/$roundId',
+  getParentRoute: () => eventLayoutRoute,
+  path: '$eventId/rounds/$roundId',
   validateSearch: () => ({}),
   parseParams: (params: Record<string, string>) => ({
     eventId: params.eventId,
@@ -84,10 +84,10 @@ export const routeTree = rootRoute.addChildren([
   indexRoute,
   dashboardRoute,
   createQuizRoute,
-  roundEditorRoute,
   eventLayoutRoute.addChildren([
     createQuizRoute,
     editQuizRoute,
     eventListRoute,
+    roundEditorRoute,
   ]),
 ]);

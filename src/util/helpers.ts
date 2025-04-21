@@ -3,7 +3,7 @@ import { QuestionType } from '../types/trivia';
 /**
  * Maps a string representation of question type to the QuestionType enum
  * @param typeStr The string or enum value to map
- * @returns The matching QuestionType enum value or OPEN_ENDED as default
+ * @returns The matching QuestionType enum value or USER as default
  */
 export const mapQuestionType = (
   typeStr: string | QuestionType
@@ -12,5 +12,5 @@ export const mapQuestionType = (
     return typeStr as QuestionType;
   }
   const enumValue = Object.values(QuestionType).find((val) => val === typeStr);
-  return enumValue || QuestionType.OPEN_ENDED;
+  return enumValue || QuestionType.USER;
 };

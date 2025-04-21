@@ -1,14 +1,14 @@
 export interface NewTriviaEvent {
   name: string;
-  eventDate: string;
+  eventDate: Date;
   rounds: TriviaRound[];
   status: EventStatus;
   description?: string;
 }
 
 export interface TriviaEvent extends NewTriviaEvent {
-  id: string;
-  userId: string;
+  id: number;
+  userId: number;
 }
 
 export interface NewTriviaRound {
@@ -19,12 +19,13 @@ export interface NewTriviaRound {
 }
 
 export interface TriviaRound extends NewTriviaRound {
-  id: string;
-  eventId: string;
-  createdAt: string;
+  id: number;
+  eventId: number;
+  createdAt: Date;
 }
 
 export interface TriviaQuestionAPI {
+  id: number;
   question: string;
   answer: string;
   type: QuestionType;
@@ -33,7 +34,7 @@ export interface TriviaQuestionAPI {
 }
 
 export interface TriviaQuestion {
-  id: string;
+  id: number;
   questionText: string;
   answerText: string;
   type: QuestionType;
@@ -48,9 +49,8 @@ export interface TriviaCategory {
 }
 
 export enum QuestionType {
-  MULTIPLE_CHOICE = 'multiple-choice',
-  TRUE_FALSE = 'true-false',
-  OPEN_ENDED = 'open-ended',
+  PRESET = 'preset',
+  USER = 'user',
 }
 
 export enum QuestionDifficulty {
@@ -76,20 +76,20 @@ export enum TriviaCategoryNames {
 }
 
 export interface ListEvent {
-  id: string;
+  id: number;
   name: string;
-  eventDate: string | null;
-  createdAt: string;
+  eventDate: Date | null;
+  createdAt: Date;
   status: string;
   roundsCount: number;
 }
 
 export interface RoundQuestionAPI {
-  roundQuestionId: string;
-  roundId: string;
+  roundQuestionId: number;
+  roundId: number;
   questionNumber: number;
-  questionId: string;
-  questionType: string;
+  questionId: number;
+  questionType: QuestionType;
   question: string;
   answer: string;
   difficulty: number;
@@ -98,10 +98,10 @@ export interface RoundQuestionAPI {
 }
 
 export interface RoundAPI {
-  id: string;
+  id: number;
   name: string;
   roundNumber: number;
-  eventId: string;
+  eventId: number;
   categoryId: number | null;
   createdAt: string;
   questions: RoundQuestionAPI[];

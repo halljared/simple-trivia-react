@@ -1,5 +1,5 @@
 import { ReactNode, useEffect } from 'react';
-import { NewTriviaEvent } from '../types/trivia';
+import { EventStatus, NewTriviaEvent } from '../types/trivia';
 import { EventContext } from '../contexts/EventContext';
 import { useTriviaStore } from '../stores/triviaStore';
 import { useParams } from '@tanstack/react-router';
@@ -15,14 +15,13 @@ export function EventProvider({ children }: EventProviderProps) {
   // Initialize event if none exists
   useEffect(() => {
     if (eventId) {
-      loadEvent(eventId);
+      loadEvent(Number(eventId));
     } else {
       const newEvent: NewTriviaEvent = {
         name: '',
-        date: new Date(),
-        host: '',
+        eventDate: new Date(),
         rounds: [],
-        status: 'upcoming',
+        status: EventStatus.UPCOMING,
       };
       setEvent(newEvent);
     }

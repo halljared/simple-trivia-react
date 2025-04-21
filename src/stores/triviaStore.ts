@@ -5,17 +5,17 @@ import {
   TriviaQuestionAPI,
   NewTriviaRound,
   TriviaEvent,
+  NewTriviaEvent,
   ListEvent,
   RoundAPI,
   TriviaRound,
-  EventStatus,
 } from '../types/trivia';
 import { API_ENDPOINTS } from '../config/api';
 import { useAuthStore } from './userStore';
 import { mapQuestionType } from '../util/helpers';
 
 interface TriviaStore {
-  event: TriviaEvent | null;
+  event: TriviaEvent | NewTriviaEvent | null;
   categories: TriviaCategory[];
   currentRound: TriviaRound | null;
   isLoading: boolean;
@@ -26,25 +26,25 @@ interface TriviaStore {
   isLoadingRound: boolean;
   events: ListEvent[];
 
-  setEvent: (event: TriviaEvent) => void;
-  saveEvent: (event: TriviaEvent) => void;
+  setEvent: (event: TriviaEvent | NewTriviaEvent) => void;
+  saveEvent: (event: TriviaEvent | NewTriviaEvent) => void;
   loadEvents: () => Promise<void>;
   updateRound: (round: TriviaRound) => void;
-  deleteRound: (roundId: string) => void;
-  loadEvent: (eventId: string) => Promise<TriviaEvent | null>;
+  deleteRound: (roundId: number) => void;
+  loadEvent: (eventId: number) => Promise<TriviaEvent | null>;
   fetchCategories: () => Promise<void>;
-  setCurrentRound: (roundId: string | null) => void;
+  setCurrentRound: (roundId: number | null) => void;
   addRound: () => Promise<NewTriviaRound>;
   addQuestions: (count: number) => Promise<void>;
   updateQuestion: (question: TriviaQuestion) => void;
-  deleteQuestion: (questionId: string) => void;
+  deleteQuestion: (questionId: number) => void;
   setCategoryId: (categoryId: number | undefined) => void;
   fetchQuestionsForCategory: (
     categoryId: number,
     count: number
   ) => Promise<TriviaQuestion[]>;
-  deleteEvent: (eventId: string) => Promise<void>;
-  loadRound: (roundId: string) => Promise<TriviaRound | null>;
+  deleteEvent: (eventId: number) => Promise<void>;
+  loadRound: (roundId: number) => Promise<TriviaRound | null>;
 }
 
 export const useTriviaStore = create<TriviaStore>((set, get) => ({
@@ -69,7 +69,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  setEvent: (event: TriviaEvent) => {
+  setEvent: (event: TriviaEvent | NewTriviaEvent) => {
     set({ event });
   },
 
@@ -116,29 +116,35 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  loadEvent: async (eventId: string): Promise<TriviaEvent | null> => {
+  loadEvent: async (eventId: number): Promise<TriviaEvent | null> => {
     set({ isLoadingEvent: true });
-    try {
-      const response = await fetch(API_ENDPOINTS.events.get(eventId), {
-        headers: {
-          Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
-        },
+
+    // Create the promise and store it in the state
+    const promise = fetch(API_ENDPOINTS.events.get(eventId), {
+      headers: {
+        Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch event');
+        }
+        return response.json();
+      })
+      .then((event) => {
+        // Ensure rounds is always an array
+        const normalizedEvent = { ...event, rounds: event.rounds || [] };
+        set({ event: normalizedEvent, isLoadingEvent: false });
+        return normalizedEvent;
+      })
+      .catch((error) => {
+        console.error('Error loading event:', error);
+        set({ isLoadingEvent: false });
+        return null;
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch event');
-      }
-
-      const event = await response.json();
-      // Ensure rounds is always an array
-      const normalizedEvent = { ...event, rounds: event.rounds || [] };
-      set({ event: normalizedEvent, isLoadingEvent: false });
-      return normalizedEvent;
-    } catch (error) {
-      console.error('Error loading event:', error);
-      set({ isLoadingEvent: false });
-      return null;
-    }
+    // Return the promise for external usage
+    return promise;
   },
 
   loadEvents: async () => {
@@ -217,7 +223,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       return { event: updatedEvent, currentRound: updatedRound };
     }),
 
-  deleteRound: async (roundId: string) => {
+  deleteRound: async (roundId: number) => {
     set({ isDeletingRound: true });
     try {
       const response = await fetch(API_ENDPOINTS.rounds.get(roundId), {
@@ -248,7 +254,11 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  loadRound: async (roundId: string): Promise<TriviaRound | null> => {
+  loadRound: async (roundId: number): Promise<TriviaRound | null> => {
+    const { event } = get();
+    if (!event) {
+      return Promise.reject(new Error('No event found'));
+    }
     set({ isLoadingRound: true });
     try {
       const response = await fetch(API_ENDPOINTS.rounds.get(roundId), {
@@ -265,7 +275,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
 
       const questions: TriviaQuestion[] = roundData.questions.map((q) => {
         return {
-          id: q.questionId || crypto.randomUUID(),
+          id: q.questionId,
           questionText: q.question,
           answerText: q.answer,
           type: mapQuestionType(q.questionType),
@@ -280,22 +290,15 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         roundNumber: roundData.roundNumber,
         categoryId: roundData.categoryId ?? undefined,
         questions,
-        createdAt: roundData.createdAt,
+        createdAt: new Date(roundData.createdAt),
       };
 
       set((state) => {
-        const currentEvent = state.event || {
-          id: roundData.eventId,
-          name: '',
-          eventDate: '',
-          status: EventStatus.DRAFT,
-          rounds: [],
-          createdAt: new Date().toISOString(),
-          userId: '',
-        };
-        if (!state.event) {
-          currentEvent.userId = `${useAuthStore.getState().user?.id || ''}`;
-        }
+        const currentEvent = state.event;
+        if (!currentEvent)
+          throw new Error(
+            'No event found. To load a round an event is required.'
+          );
 
         const updatedRounds = currentEvent.rounds.some((r) => r.id === round.id)
           ? currentEvent.rounds.map((r) => (r.id === round.id ? round : r))
@@ -330,7 +333,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         ...currentRound,
         questions: apiQuestions.map((q) => ({
           ...q,
-          id: crypto.randomUUID(),
+          id: q.id,
         })),
       });
     } finally {
@@ -392,7 +395,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       const questionsAPI: TriviaQuestionAPI[] = await response.json();
 
       return questionsAPI.map((q) => ({
-        id: crypto.randomUUID(),
+        id: q.id,
         questionText: q.question,
         answerText: q.answer,
         type: mapQuestionType(q.type),
@@ -405,7 +408,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  deleteEvent: async (eventId: string) => {
+  deleteEvent: async (eventId: number) => {
     set({ isDeletingEvent: true });
     try {
       const response = await fetch(API_ENDPOINTS.events.get(eventId), {
