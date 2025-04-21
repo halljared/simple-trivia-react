@@ -1,15 +1,15 @@
-// QuestionEditor.tsx
+// RoundEditor.tsx
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import QuestionList from '../components/QuestionList';
-import { questionEditorRoute, createQuizRoute } from '../config/routes';
+import { roundEditorRoute, createQuizRoute } from '../config/routes';
 import { useTriviaStore } from '../stores/triviaStore';
 import { Breadcrumbs, Typography, Box } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
-export default function QuestionEditor() {
+export default function RoundEditor() {
   const navigate = useNavigate();
-  const { eventId, roundId } = questionEditorRoute.useParams();
+  const { eventId, roundId } = roundEditorRoute.useParams();
   const {
     currentRound,
     setCurrentRound,
@@ -40,6 +40,7 @@ export default function QuestionEditor() {
       <QuestionList
         onSave={() => navigate({ to: createQuizRoute.id })}
         onBack={() => navigate({ to: createQuizRoute.id })}
+        questions={currentRound.questions}
       />
     </>
   );

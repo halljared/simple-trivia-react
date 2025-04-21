@@ -20,12 +20,7 @@ interface RoundListProps {
   rounds: NewTriviaRound[];
 }
 
-interface TempRound extends NewTriviaRound {
-  isTemp: boolean;
-}
-
 export default function RoundList({ rounds }: RoundListProps) {
-  const [tempRounds, setTempRounds] = useState<TempRound[]>([]);
   const [deletingRounds, setDeletingRounds] = useState<Set<string>>(new Set());
   const { addRound, deleteRound } = useTriviaStore();
   const { event } = useEvent();
@@ -41,28 +36,14 @@ export default function RoundList({ rounds }: RoundListProps) {
   };
 
   const onAddRound = async () => {
-    const numRounds = rounds.length;
-    const tempRound: TempRound = {
-      id: crypto.randomUUID(),
-      name: `Round ${numRounds + 1}`,
-      roundNumber: numRounds + 1,
-      questions: [],
-      isTemp: true,
-    };
-
-    setTempRounds((prev) => [...prev, tempRound]);
-
+    if (!event || !('id' in event)) return;
     try {
-      await addRound();
+      const newRound = await addRound();
+      navigate({
+        to: `/events/${event.id}/rounds/${newRound.id}`,
+      });
     } catch (error) {
-      setTempRounds((prev) =>
-        prev.filter((round) => round.id !== tempRound.id)
-      );
       console.error('Failed to add round:', error);
-    } finally {
-      setTempRounds((prev) =>
-        prev.filter((round) => round.id !== tempRound.id)
-      );
     }
   };
 
@@ -97,7 +78,7 @@ export default function RoundList({ rounds }: RoundListProps) {
       </Box>
 
       <Stack spacing={2}>
-        {[...rounds, ...tempRounds].map((round) => {
+        {rounds.map((round) => {
           const isDeleting = deletingRounds.has(round.id);
           return (
             <Card key={round.id}>

@@ -1,4 +1,3 @@
-// triviaStore.ts
 import { create } from 'zustand';
 import {
   TriviaCategory,
@@ -8,6 +7,7 @@ import {
   NewTriviaRound,
   TriviaEventUnion,
   ListEvent,
+  RoundAPI, // Added import
 } from '../types/trivia';
 import { API_ENDPOINTS } from '../config/api';
 import { useAuthStore } from './userStore';
@@ -21,6 +21,7 @@ interface TriviaStore {
   isDeletingEvent: boolean;
   isDeletingRound: boolean;
   isLoadingEvents: boolean;
+  isLoadingRound: boolean;
   events: ListEvent[];
 
   // Actions
@@ -42,6 +43,7 @@ interface TriviaStore {
     count: number
   ) => Promise<TriviaQuestion[]>;
   deleteEvent: (eventId: string) => Promise<void>;
+  loadRound: (roundId: string) => Promise<NewTriviaRound | null>;
 }
 
 export const useTriviaStore = create<TriviaStore>((set, get) => ({
@@ -51,8 +53,9 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
   isLoading: false,
   isLoadingEvent: false,
   isDeletingEvent: false,
-  isLoadingEvents: false,
   isDeletingRound: false,
+  isLoadingEvents: false,
+  isLoadingRound: false,
   events: [],
 
   fetchCategories: async () => {
@@ -92,7 +95,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
           id: 'id' in event ? event.id : undefined,
           name: event.name,
           event_date: event.date,
-          description: event.description ?? '', // Use nullish coalescing to handle undefined
+          description: event.description ?? '',
           status: event.status,
         }),
       });
@@ -212,7 +215,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         `event-${updatedEvent.id}`,
         JSON.stringify(updatedEvent)
       );
-      return { event: updatedEvent, currentRound: updatedRound }; // Update currentRound too!
+      return { event: updatedEvent, currentRound: updatedRound };
     }),
 
   deleteRound: async (roundId: string) => {
@@ -229,7 +232,6 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         throw new Error('Failed to delete round');
       }
 
-      // Remove the round from the local rounds list
       set((state) => {
         if (!state.event) return state;
         return {
@@ -247,6 +249,64 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
+  loadRound: async (roundId: string): Promise<NewTriviaRound | null> => {
+    set({ isLoadingRound: true });
+    try {
+      const response = await fetch(API_ENDPOINTS.rounds.get(roundId), {
+        headers: {
+          Authorization: `Bearer ${useAuthStore.getState().sessionToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch round');
+      }
+
+      const roundData: RoundAPI = await response.json();
+
+      // Map the questions to match TriviaQuestion type
+      const questions: TriviaQuestion[] = roundData.questions.map((q) => ({
+        id: q.questionId || crypto.randomUUID(),
+        questionText: q.question,
+        answerText: q.answer,
+        type: q.questionType || 'open-ended',
+        points: q.difficulty || 1,
+        difficulty: q.difficulty,
+      }));
+
+      // Construct the round object matching NewTriviaRound
+      const round: NewTriviaRound = {
+        id: roundData.id,
+        name: roundData.name,
+        roundNumber: roundData.roundNumber,
+        eventId: roundData.eventId,
+        categoryId: roundData.categoryId ?? undefined, // Convert null to undefined for consistency
+        questions,
+      };
+
+      // Update the store: set currentRound and update event's rounds
+      set((state) => {
+        if (!state.event) {
+          return { currentRound: round, isLoadingRound: false };
+        }
+        const updatedRounds = state.event.rounds.some((r) => r.id === round.id)
+          ? state.event.rounds.map((r) => (r.id === round.id ? round : r))
+          : [...state.event.rounds, round];
+        return {
+          event: { ...state.event, rounds: updatedRounds },
+          currentRound: round,
+          isLoadingRound: false,
+        };
+      });
+
+      return round;
+    } catch (error) {
+      console.error('Error loading round:', error);
+      set({ isLoadingRound: false });
+      return null;
+    }
+  },
+
   addQuestions: async (count) => {
     const { currentRound } = get();
     if (!currentRound?.categoryId) return;
@@ -257,7 +317,6 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         currentRound.categoryId,
         count
       );
-      // Update the currentRound directly, leveraging updateRound
       get().updateRound({
         ...currentRound,
         questions: apiQuestions.map((q) => ({
@@ -272,7 +331,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
 
   updateQuestion: (updatedQuestion) => {
     set((state) => {
-      if (!state.currentRound) return state; // Guard against no current round
+      if (!state.currentRound) return state;
 
       const updatedRound = {
         ...state.currentRound,
@@ -280,10 +339,8 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
           q.id === updatedQuestion.id ? updatedQuestion : q
         ),
       };
-      // Call updateRound to keep event and currentRound in sync
       return { ...state, currentRound: updatedRound };
     });
-    //After updating the round, update the event.
     const { currentRound } = get();
     if (currentRound) {
       get().updateRound(currentRound);
@@ -292,7 +349,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
 
   deleteQuestion: (questionId) => {
     set((state) => {
-      if (!state.currentRound) return state; // Guard clause
+      if (!state.currentRound) return state;
 
       const updatedRound = {
         ...state.currentRound,
@@ -300,11 +357,8 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
           (q) => q.id !== questionId
         ),
       };
-
-      //Use the update round, since it will persist changes to local storage.
       return { ...state, currentRound: updatedRound };
     });
-    //After updating the round, update the event.
     const { currentRound } = get();
     if (currentRound) {
       get().updateRound(currentRound);
@@ -313,7 +367,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
 
   setCategoryId: (categoryId) => {
     set((state) => {
-      if (!state.currentRound) return state; //Guard
+      if (!state.currentRound) return state;
       return { currentRound: { ...state.currentRound, categoryId } };
     });
   },
@@ -352,7 +406,6 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
         throw new Error('Failed to delete event');
       }
 
-      // Remove the event from the local events list
       set((state) => ({
         events: state.events.filter((e) => e.id !== eventId),
         isDeletingEvent: false,

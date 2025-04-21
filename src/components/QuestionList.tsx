@@ -14,13 +14,18 @@ import {
 } from '@mui/material';
 import { useCategories } from '../hooks/useCategories';
 import { useTriviaStore } from '../stores/triviaStore';
-
+import { TriviaQuestion } from '../types/trivia';
 interface QuestionListProps {
   onSave: () => void; // Simplified: No need to pass round back
   onBack: () => void;
+  questions: TriviaQuestion[];
 }
 
-export default function QuestionList({ onSave, onBack }: QuestionListProps) {
+export default function QuestionList({
+  onSave,
+  onBack,
+  questions,
+}: QuestionListProps) {
   const [questionCount, setQuestionCount] = useState<number>(10);
   const { categories, isLoading: isLoadingCategories } = useCategories();
   const {
@@ -81,11 +86,11 @@ export default function QuestionList({ onSave, onBack }: QuestionListProps) {
                 }}
                 options={
                   categories?.sort(
-                    (a, b) => b.question_count - a.question_count
+                    (a, b) => b.questionCount - a.questionCount
                   ) || []
                 }
                 getOptionLabel={(option) =>
-                  `${option.name} (${option.question_count} questions)`
+                  `${option.name} (${option.questionCount} questions)`
                 }
                 renderInput={(params) => (
                   <TextField
@@ -132,7 +137,7 @@ export default function QuestionList({ onSave, onBack }: QuestionListProps) {
               Loading questions...
             </Typography>
           </Box>
-        ) : currentRound.questions.length === 0 ? (
+        ) : questions.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography color="text.secondary">
               No questions added yet. Select a category and create some
@@ -140,7 +145,7 @@ export default function QuestionList({ onSave, onBack }: QuestionListProps) {
             </Typography>
           </Box>
         ) : (
-          currentRound.questions.map((question, index) => (
+          questions.map((question, index) => (
             <QuestionItem
               key={question.id}
               question={question}

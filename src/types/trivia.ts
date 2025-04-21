@@ -85,3 +85,27 @@ export interface ListEvent {
   status: string;
   roundsCount: number;
 }
+
+export interface RoundQuestionAPI {
+  roundQuestionId: string;
+  roundId: string;
+  questionNumber: number;
+  questionId: string;
+  questionType: string;
+  question: string;
+  answer: string;
+  difficulty: number;
+  categoryId: number;
+  categoryName: string;
+}
+
+// Type for the full round API response
+export interface RoundAPI {
+  id: string;
+  name: string;
+  roundNumber: number;
+  eventId: string;
+  categoryId: number | null;
+  createdAt: string | null;
+  questions: RoundQuestionAPI[];
+}

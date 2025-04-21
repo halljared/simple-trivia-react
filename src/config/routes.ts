@@ -1,7 +1,7 @@
 import { createRootRoute, createRoute } from '@tanstack/react-router';
 import MainLayout from '@/components/layout/MainLayout';
 import Home from '@/pages/Home';
-import QuestionEditor from '@/pages/QuestionEditor';
+import RoundEditor from '@/pages/RoundEditor';
 import Dashboard from '@/pages/Dashboard';
 import EventLayout from '@/components/layout/EventLayout';
 import NotFound from '@/components/NotFound';
@@ -51,7 +51,7 @@ const editQuizRoute = createRoute({
   component: EventEdit,
 });
 
-const questionEditorRoute = createRoute({
+const roundEditorRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/events/$eventId/rounds/$roundId',
   validateSearch: () => ({}),
@@ -60,7 +60,7 @@ const questionEditorRoute = createRoute({
     roundId: params.roundId,
   }),
   stringifyParams: (params: { eventId: string; roundId: string }) => params,
-  component: QuestionEditor,
+  component: RoundEditor,
 });
 
 const eventListRoute = createRoute({
@@ -74,7 +74,7 @@ export {
   indexRoute,
   dashboardRoute,
   createQuizRoute,
-  questionEditorRoute,
+  roundEditorRoute,
   eventLayoutRoute,
   eventListRoute,
   editQuizRoute,
@@ -84,7 +84,7 @@ export const routeTree = rootRoute.addChildren([
   indexRoute,
   dashboardRoute,
   createQuizRoute,
-  questionEditorRoute,
+  roundEditorRoute,
   eventLayoutRoute.addChildren([
     createQuizRoute,
     editQuizRoute,
