@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AuthStoreState } from '../types/auth';
+import { API_BASE_URL } from '../config/api';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const DEV_MODE = import.meta.env.MODE === 'development';
 const BYPASS_AUTH = import.meta.env.VITE_BYPASS_AUTH === 'true';
 
@@ -21,7 +21,7 @@ export const useAuthStore = create<AuthStoreState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch(`${API_URL}/auth/login`, {
+          const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password }),
@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthStoreState>()(
       register: async (username: string, email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch(`${API_URL}/auth/register`, {
+          const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, email, password }),
@@ -70,7 +70,7 @@ export const useAuthStore = create<AuthStoreState>()(
 
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch(`${API_URL}/auth/logout`, {
+          const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${sessionToken}`,
@@ -100,7 +100,7 @@ export const useAuthStore = create<AuthStoreState>()(
 
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch(`${API_URL}/auth/me`, {
+          const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
             headers: {
               Authorization: `Bearer ${sessionToken}`,
             },

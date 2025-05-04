@@ -1,12 +1,7 @@
 // API configuration
 const getBaseUrl = () => {
-  // For local development
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:5000';
-  }
-
-  // For production - can be overridden by environment variable
-  return process.env.REACT_APP_API_URL || window.location.origin;
+  // Use Vite's environment variable, fallback to localhost
+  return import.meta.env.VITE_API_URL || 'http://localhost:5000';
 };
 
 export const API_BASE_URL = getBaseUrl();
