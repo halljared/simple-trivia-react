@@ -28,14 +28,8 @@ export default function QuestionList({
 }: QuestionListProps) {
   const [questionCount, setQuestionCount] = useState<number>(10);
   const { categories, isLoading: isLoadingCategories } = useCategories();
-  const {
-    currentRound,
-    isLoading,
-    addQuestions,
-    updateQuestion,
-    deleteQuestion,
-    setCategoryId,
-  } = useTriviaStore();
+  const { currentRound, isLoading, addQuestions, setCategoryId } =
+    useTriviaStore();
 
   // VERY IMPORTANT: Guard against null currentRound.  This can happen
   // while the event/round is loading.
@@ -146,13 +140,7 @@ export default function QuestionList({
           </Box>
         ) : (
           questions.map((question, index) => (
-            <QuestionItem
-              key={question.id}
-              question={question}
-              index={index}
-              onUpdate={updateQuestion}
-              onDelete={deleteQuestion}
-            />
+            <QuestionItem key={question.id} question={question} index={index} />
           ))
         )}
       </Stack>

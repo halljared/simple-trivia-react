@@ -3,7 +3,6 @@ import {
   TriviaCategory,
   TriviaQuestion,
   TriviaQuestionAPI,
-  NewTriviaRound,
   TriviaEvent,
   NewTriviaEvent,
   ListEvent,
@@ -34,7 +33,7 @@ interface TriviaStore {
   loadEvent: (eventId: number) => Promise<TriviaEvent | null>;
   fetchCategories: () => Promise<void>;
   setCurrentRound: (roundId: number | null) => void;
-  addRound: () => Promise<NewTriviaRound>;
+  addRound: () => Promise<TriviaRound>;
   addQuestions: (count: number) => Promise<void>;
   updateQuestion: (question: TriviaQuestion) => void;
   deleteQuestion: (questionId: number) => void;
@@ -168,7 +167,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  addRound: async (): Promise<NewTriviaRound> => {
+  addRound: async (): Promise<TriviaRound> => {
     const { event } = get();
 
     if (!event) {
@@ -276,8 +275,8 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
       const questions: TriviaQuestion[] = roundData.questions.map((q) => {
         return {
           id: q.questionId,
-          questionText: q.question,
-          answerText: q.answer,
+          question: q.question,
+          answer: q.answer,
           type: mapQuestionType(q.questionType),
           difficulty: q.difficulty,
         };
@@ -396,8 +395,8 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
 
       return questionsAPI.map((q) => ({
         id: q.id,
-        questionText: q.question,
-        answerText: q.answer,
+        question: q.question,
+        answer: q.answer,
         type: mapQuestionType(q.type),
         difficulty: q.difficulty,
         options: q.options,

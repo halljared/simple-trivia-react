@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router';
 import RoundList from '../components/RoundList';
 import {
   Box,
@@ -13,7 +12,6 @@ import { useTriviaStore } from '@/stores/triviaStore';
 import { useState, useEffect } from 'react';
 
 export default function EventEditor() {
-  const navigate = useNavigate();
   const { event } = useEvent();
   const [eventName, setEventName] = useState('');
   const { saveEvent, isLoadingEvent } = useTriviaStore();

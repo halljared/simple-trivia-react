@@ -1,5 +1,6 @@
 import { Chip, Stack } from '@mui/material';
 import { TriviaQuestion } from '../types/trivia';
+import { difficultyDisplayMap } from '../util/helpers';
 
 // Map question types to colors and display text
 const typeColorMap: Record<string, 'primary' | 'secondary' | 'info'> = {
@@ -21,12 +22,6 @@ const difficultyColorMap: Record<string, 'success' | 'warning' | 'error'> = {
   hard: 'error',
 };
 
-const difficultyDisplayMap: Record<string, string> = {
-  easy: 'Easy',
-  medium: 'Medium',
-  hard: 'Hard',
-};
-
 interface QuestionViewProps {
   question: TriviaQuestion;
 }
@@ -43,12 +38,9 @@ export function QuestionView({ question }: QuestionViewProps) {
         />
         <Chip
           label={
-            difficultyDisplayMap[question.difficulty.toLowerCase()] ||
-            question.difficulty
+            difficultyDisplayMap[question.difficulty] || question.difficulty
           }
-          color={
-            difficultyColorMap[question.difficulty.toLowerCase()] || 'default'
-          }
+          color={difficultyColorMap[question.difficulty] || 'default'}
           size="small"
         />
       </Stack>

@@ -29,19 +29,19 @@ export default function QuestionEditor({
             question: e.target.value,
           }))
         }
-        label="Question Text"
+        label="Question"
       />
 
       <TextField
         fullWidth
-        value={editedQuestion.answerText}
+        value={editedQuestion.answer}
         onChange={(e) =>
           setEditedQuestion((prev) => ({
             ...prev,
-            answerText: e.target.value,
+            answer: e.target.value,
           }))
         }
-        label="Correct Answer"
+        label="Answer"
       />
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>

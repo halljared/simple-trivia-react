@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NewTriviaRound } from '../types/trivia';
+import { TriviaRound } from '../types/trivia';
 import {
   Box,
   Typography,
@@ -17,16 +17,16 @@ import { useEvent } from '@/contexts/EventContext';
 import { useNavigate } from '@tanstack/react-router';
 
 interface RoundListProps {
-  rounds: NewTriviaRound[];
+  rounds: TriviaRound[];
 }
 
 export default function RoundList({ rounds }: RoundListProps) {
-  const [deletingRounds, setDeletingRounds] = useState<Set<string>>(new Set());
+  const [deletingRounds, setDeletingRounds] = useState<Set<number>>(new Set());
   const { addRound, deleteRound } = useTriviaStore();
   const { event } = useEvent();
   const navigate = useNavigate();
 
-  const onEditRound = (roundId: string) => {
+  const onEditRound = (roundId: number) => {
     if (!event) return;
     if ('id' in event) {
       navigate({
@@ -47,8 +47,8 @@ export default function RoundList({ rounds }: RoundListProps) {
     }
   };
 
-  const onDeleteRound = async (roundId: string) => {
-    setDeletingRounds((prev) => new Set(prev).add(roundId));
+  const onDeleteRound = async (roundId: number) => {
+    setDeletingRounds((prev) => new Set<number>(prev).add(roundId));
     try {
       await deleteRound(roundId);
     } catch (error) {

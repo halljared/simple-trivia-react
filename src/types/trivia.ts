@@ -29,16 +29,16 @@ export interface TriviaQuestionAPI {
   question: string;
   answer: string;
   type: QuestionType;
-  difficulty: number;
+  difficulty: QuestionDifficulty;
   options?: string[];
 }
 
 export interface TriviaQuestion {
   id: number;
-  questionText: string;
-  answerText: string;
+  question: string;
+  answer: string;
   type: QuestionType;
-  difficulty: number;
+  difficulty: QuestionDifficulty;
   options?: string[];
 }
 
@@ -92,7 +92,7 @@ export interface RoundQuestionAPI {
   questionType: QuestionType;
   question: string;
   answer: string;
-  difficulty: number;
+  difficulty: QuestionDifficulty;
   categoryId: number;
   categoryName: string;
 }

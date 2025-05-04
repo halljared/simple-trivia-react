@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 
 .cursor
+
+# Environment variables
+.env.local
+.env.*.local

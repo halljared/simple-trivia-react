@@ -5,24 +5,19 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import QuestionEditor from './QuestionEditor';
 import { QuestionView } from './QuestionView';
+import { useTriviaStore } from '@/stores/triviaStore';
 
 interface QuestionItemProps {
   question: TriviaQuestion;
   index: number;
-  onUpdate: (question: TriviaQuestion) => void;
-  onDelete: (questionId: string) => void;
 }
 
-export function QuestionItem({
-  question,
-  index,
-  onUpdate,
-  onDelete,
-}: QuestionItemProps) {
+export function QuestionItem({ question, index }: QuestionItemProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const { updateQuestion, deleteQuestion } = useTriviaStore();
 
   const handleSave = (updatedQuestion: TriviaQuestion) => {
-    onUpdate(updatedQuestion);
+    updateQuestion(updatedQuestion);
     setIsEditing(false);
   };
 
@@ -57,7 +52,10 @@ export function QuestionItem({
               <IconButton onClick={() => setIsEditing(true)} color="primary">
                 <EditIcon />
               </IconButton>
-              <IconButton onClick={() => onDelete(question.id)} color="error">
+              <IconButton
+                onClick={() => deleteQuestion(question.id)}
+                color="error"
+              >
                 <DeleteIcon />
               </IconButton>
             </Box>
