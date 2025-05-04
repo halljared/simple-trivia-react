@@ -30,10 +30,13 @@ export default function EventList() {
   }, [loadEvents]);
 
   const handleEdit = (event: ListEvent) => {
-    navigate({ to: editQuizRoute.id, params: { eventId: event.id } });
+    navigate({
+      to: editQuizRoute.id,
+      params: { eventId: event.id.toString() },
+    });
   };
 
-  const handleDelete = async (eventId: string) => {
+  const handleDelete = async (eventId: number) => {
     try {
       await deleteEvent(eventId);
     } catch (error) {

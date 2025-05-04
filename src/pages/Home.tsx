@@ -49,7 +49,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { login, register, isLoading, isAuthenticated } = useAuthStore();
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
     setError(null);
   };
