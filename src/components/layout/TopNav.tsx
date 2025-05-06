@@ -18,7 +18,7 @@ interface TopNavProps {
 }
 
 export default function TopNav({ onMenuClick }: TopNavProps) {
-  const logout = useAuthStore((state) => state.logout);
+  const { logout, user } = useAuthStore();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -91,8 +91,58 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
               vertical: 'top',
               horizontal: 'right',
             }}
+            slotProps={{
+              paper: {
+                sx: {
+                  p: 2,
+                  bgcolor: 'background.paper',
+                  boxShadow: 3,
+                  borderRadius: 2,
+                },
+                elevation: 4,
+              },
+            }}
           >
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: 'text.secondary',
+                  mb: 1,
+                  textAlign: 'left',
+                  px: 1,
+                }}
+              >
+                Logged in as:
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: 'text.primary',
+                  fontWeight: 600,
+                  mb: 1,
+                  textAlign: 'center',
+                  px: 1,
+                }}
+              >
+                {user?.username}
+              </Typography>
+              <MenuItem
+                onClick={handleLogout}
+                sx={{
+                  mt: 1,
+                  borderRadius: 1,
+                  bgcolor: 'grey.100',
+                  '&:hover': {
+                    bgcolor: 'grey.200',
+                  },
+                  fontWeight: 500,
+                  justifyContent: 'center',
+                }}
+              >
+                Logout
+              </MenuItem>
+            </Box>
           </Popover>
         </Box>
       </Toolbar>
