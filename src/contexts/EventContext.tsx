@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react';
-import { NewTriviaEvent, TriviaEvent } from '../types/trivia';
+import { TriviaEvent } from '../types/trivia';
 
 interface EventContextValue {
-  event: NewTriviaEvent | TriviaEvent | null;
+  event: TriviaEvent | null;
 }
 
 export const EventContext = createContext<EventContextValue | undefined>(

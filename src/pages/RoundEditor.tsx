@@ -41,7 +41,12 @@ export default function RoundEditor() {
       </Box>
       <QuestionList
         onSave={() => navigate({ to: createQuizRoute.id })}
-        onBack={() => navigate({ to: createQuizRoute.id })}
+        onBack={() =>
+          navigate({
+            to: roundEditorRoute.id,
+            params: { eventId: event?.id.toString() ?? '', roundId },
+          })
+        }
         questions={currentRound.questions}
       />
     </>

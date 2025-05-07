@@ -14,7 +14,7 @@ import { useAuthStore } from './userStore';
 import { mapQuestionType } from '../util/helpers';
 
 interface TriviaStore {
-  event: TriviaEvent | NewTriviaEvent | null;
+  event: TriviaEvent | null;
   categories: TriviaCategory[];
   currentRound: TriviaRound | null;
   isLoading: boolean;
@@ -25,7 +25,7 @@ interface TriviaStore {
   isLoadingRound: boolean;
   events: ListEvent[];
 
-  setEvent: (event: TriviaEvent | NewTriviaEvent) => void;
+  setEvent: (event: TriviaEvent) => void;
   saveEvent: (event: TriviaEvent | NewTriviaEvent) => void;
   loadEvents: () => Promise<void>;
   updateRound: (round: TriviaRound) => void;
@@ -68,7 +68,7 @@ export const useTriviaStore = create<TriviaStore>((set, get) => ({
     }
   },
 
-  setEvent: (event: TriviaEvent | NewTriviaEvent) => {
+  setEvent: (event: TriviaEvent) => {
     set({ event });
   },
 

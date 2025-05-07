@@ -10,17 +10,31 @@ import {
 import { useEvent } from '@/contexts/EventContext';
 import { useTriviaStore } from '@/stores/triviaStore';
 import { useState, useEffect } from 'react';
+import { NewTriviaEvent, TriviaEvent } from '@/types/trivia';
+import { EventStatus } from '@/types/trivia';
 
 export default function EventEditor() {
   const { event } = useEvent();
-  const [eventName, setEventName] = useState('');
+  const [newEvent, setNewEvent] = useState<NewTriviaEvent | null>(null);
   const { saveEvent, isLoadingEvent } = useTriviaStore();
+  const [thisEvent, setThisEvent] = useState<
+    TriviaEvent | NewTriviaEvent | null
+  >(null);
 
   useEffect(() => {
-    if (event) {
-      setEventName(event.name);
+    if (!event) {
+      setNewEvent({
+        name: '',
+        eventDate: new Date(),
+        rounds: [],
+        status: EventStatus.UPCOMING,
+      });
     }
   }, [event]);
+
+  useEffect(() => {
+    setThisEvent(event ?? newEvent);
+  }, [event, newEvent]);
 
   if (isLoadingEvent) {
     return (
@@ -38,11 +52,15 @@ export default function EventEditor() {
     );
   }
 
-  if (!event) return null;
-
   const handleSave = () => {
-    if (eventName) {
-      saveEvent({ ...event, name: eventName });
+    if (thisEvent) {
+      saveEvent({ ...thisEvent });
+    }
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (thisEvent) {
+      setThisEvent({ ...thisEvent, name: e.target.value });
     }
   };
 
@@ -55,8 +73,8 @@ export default function EventEditor() {
         </Typography>
         <TextField
           fullWidth
-          value={eventName}
-          onChange={(e) => setEventName(e.target.value)}
+          value={thisEvent?.name ?? ''}
+          onChange={handleNameChange}
           label="Event Name"
           sx={{ mb: 2 }}
         />
@@ -71,7 +89,7 @@ export default function EventEditor() {
         </Button>
       </Paper>
 
-      <RoundList rounds={event.rounds} />
+      <RoundList rounds={thisEvent?.rounds ?? []} />
     </Box>
   );
 }
