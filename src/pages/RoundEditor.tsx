@@ -6,6 +6,7 @@ import { useTriviaStore } from '../stores/triviaStore';
 import { Breadcrumbs, Typography, Box } from '@mui/material';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { useEvent } from '@/contexts/EventContext';
+import { editEventRoute } from '../config/routes';
 
 export default function RoundEditor() {
   const navigate = useNavigate();
@@ -43,8 +44,8 @@ export default function RoundEditor() {
         onSave={() => navigate({ to: createQuizRoute.id })}
         onBack={() =>
           navigate({
-            to: roundEditorRoute.id,
-            params: { eventId: event?.id.toString() ?? '', roundId },
+            to: editEventRoute.id,
+            params: { eventId: event?.id.toString() ?? '' },
           })
         }
         questions={currentRound.questions}

@@ -40,7 +40,7 @@ const createQuizRoute = createRoute({
   component: EventCreate,
 });
 
-const editQuizRoute = createRoute({
+const editEventRoute = createRoute({
   getParentRoute: () => eventLayoutRoute,
   path: '$eventId/edit',
   validateSearch: () => ({}),
@@ -77,7 +77,7 @@ export {
   roundEditorRoute,
   eventLayoutRoute,
   eventListRoute,
-  editQuizRoute,
+  editEventRoute,
 };
 
 export const routeTree = rootRoute.addChildren([
@@ -86,7 +86,7 @@ export const routeTree = rootRoute.addChildren([
   createQuizRoute,
   eventLayoutRoute.addChildren([
     createQuizRoute,
-    editQuizRoute,
+    editEventRoute,
     eventListRoute,
     roundEditorRoute,
   ]),

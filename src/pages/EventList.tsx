@@ -17,7 +17,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import { ListEvent } from '@/types/trivia';
-import { editQuizRoute } from '@/config/routes';
+import { editEventRoute } from '@/config/routes';
 
 export default function EventList() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export default function EventList() {
 
   const handleEdit = (event: ListEvent) => {
     navigate({
-      to: editQuizRoute.id,
+      to: editEventRoute.id,
       params: { eventId: event.id.toString() },
     });
   };
