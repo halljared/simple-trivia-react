@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthStoreState>()(
 
           set({
             user: data.user,
-            sessionToken: data.session_token,
+            sessionToken: data.sessionToken,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -56,6 +56,8 @@ export const useAuthStore = create<AuthStoreState>()(
 
           set({
             user: data.user,
+            sessionToken: data.sessionToken,
+            isAuthenticated: true,
             isLoading: false,
           });
         } catch (error) {
